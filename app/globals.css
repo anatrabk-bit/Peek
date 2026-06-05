@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+@layer base {
+  body {
+    @apply bg-peek-bg font-sans text-peek-text antialiased;
+  }
+}
+
+@layer components {
+  .page-container {
+    @apply mx-auto max-w-5xl px-6 py-10;
+  }
+
+  .heading-hero {
+    @apply text-4xl font-bold tracking-tight text-balance sm:text-5xl;
+  }
+
+  .heading-section {
+    @apply text-2xl font-semibold text-peek-text;
+  }
+
+  .text-body {
+    @apply text-base leading-relaxed text-peek-muted;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full bg-peek-accent px-6 py-3 font-semibold text-white transition hover:opacity-90;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full border-2 border-peek-primary px-6 py-3 font-semibold text-peek-primary transition hover:bg-sky-50;
+  }
+
+  .btn-hero-outline {
+    @apply inline-flex items-center justify-center rounded-full border-2 border-white px-6 py-3 font-semibold text-white transition hover:bg-white/10;
+  }
+
+  .card {
+    @apply rounded-2xl bg-white p-6 shadow-card transition-shadow duration-200 hover:shadow-card-hover;
+  }
+
+  .card-static {
+    @apply rounded-2xl bg-white p-6 shadow-card;
+  }
+
+  .input-field {
+    @apply w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-peek-text placeholder:text-peek-muted focus:border-peek-primary focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:bg-peek-card;
+  }
+
+  .badge-open {
+    @apply rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-700;
+  }
+}
