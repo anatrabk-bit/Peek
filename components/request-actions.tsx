@@ -52,9 +52,7 @@ export function RequestActions({
 
     startTransition(async () => {
       const result = await claimRequest(request.id);
-      if (result?.ok) {
-        setClaimed(true);
-      } else if (result?.error) {
+      if (result?.error) {
         setError(result.error);
       }
     });

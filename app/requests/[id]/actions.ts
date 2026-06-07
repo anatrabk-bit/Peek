@@ -48,9 +48,10 @@ export async function claimRequest(requestId: string) {
   }
 
   revalidatePath(`/requests/${requestId}`);
+  revalidatePath(`/requests/${requestId}/claimed`);
   revalidatePath("/requests");
 
-  return { ok: true as const };
+  redirect(`/requests/${requestId}/claimed`);
 }
 
 export async function submitResponse(requestId: string, formData: FormData) {
