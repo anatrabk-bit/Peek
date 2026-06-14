@@ -1,14 +1,32 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { RequestsMap } from "@/components/maps/requests-map";
+
+const RequestsMap = dynamic(
+  () =>
+    import("@/components/maps/requests-map").then((mod) => mod.RequestsMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[420px] items-center justify-center rounded-2xl bg-peek-card text-sm text-peek-muted">
+        Loading map…
+      </div>
+    )
+  }
+);
 import { getDistanceKm, hasValidCoordinates, type Coordinates } from "@/lib/geo";
+import { UserProfilePreview } from "@/components/user-profile-preview";
+import type { AuthUserSummary } from "@/lib/auth-user";
 import type { MarketplaceRequest } from "@/types/request";
+import type { UserRatingSummary } from "@/types/rating";
 
 type BrowseRequestsViewProps = {
   requests: MarketplaceRequest[];
   fetchError?: string | null;
+  requesterRatings?: Record<string, UserRatingSummary>;
+  requesterDisplays?: Record<string, AuthUserSummary>;
   fetchMeta?: {
     queryUsed: string;
     fetchedAt: string;
@@ -18,6 +36,8 @@ type BrowseRequestsViewProps = {
 export function BrowseRequestsView({
   requests,
   fetchError = null,
+  requesterRatings = {},
+  requesterDisplays = {},
   fetchMeta
 }: BrowseRequestsViewProps) {
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
@@ -88,8 +108,8 @@ export function BrowseRequestsView({
           <div>
             <h2 className="text-lg font-semibold text-peek-text">Map view</h2>
             <p className="mt-1 text-sm text-peek-muted">
-              All open requests on the map. Tap a pin to see details and claim
-              any job you like.
+              All open requests on the map. Tap a pin to apply — the client
+              approves you before you start.
             </p>
           </div>
 
@@ -119,6 +139,20 @@ export function BrowseRequestsView({
                   {request.title}
                 </h3>
                 <p className="mt-1 text-body">{request.location}</p>
+                {request.user_id && requesterDisplays[request.user_id] && (
+                  <div className="mt-3">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-peek-muted">
+                      Posted by
+                    </p>
+                    <UserProfilePreview
+                      display={requesterDisplays[request.user_id]}
+                      userId={request.user_id}
+                      role="client"
+                      summary={requesterRatings[request.user_id] ?? null}
+                      size="sm"
+                    />
+                  </div>
+                )}
                 {userLocation &&
                   hasValidCoordinates(request.latitude, request.longitude) && (
                     <p className="mt-1 text-xs text-peek-muted">

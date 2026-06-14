@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { confirmPaymentReceived as confirmPayment } from "@/lib/admin/confirm-payment";
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { RequestStatus } from "@/types/request";
@@ -58,4 +59,22 @@ export async function deleteRequest(requestId: string) {
   revalidatePath("/requests");
 
   return { ok: true as const };
+}
+
+export async function confirmPaymentReceived(requestId: string) {
+  const auth = await assertAdmin();
+  if (!auth.ok) {
+    return auth;
+  }
+
+  const result = await confirmPayment(requestId);
+
+  if (result.ok) {
+    revalidatePath("/admin");
+    revalidatePath("/my-requests");
+    revalidatePath("/requests");
+    revalidatePath(`/requests/${requestId}`);
+  }
+
+  return result;
 }

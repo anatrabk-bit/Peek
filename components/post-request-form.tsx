@@ -7,8 +7,23 @@ import {
 } from "@/components/maps/places-autocomplete";
 import { createRequest } from "@/app/post-request/actions";
 import { MIN_BUDGET_GBP, MIN_BUDGET_MESSAGE } from "@/lib/constants";
+import {
+  freeBudgetHint,
+  freeSubmitButtonLabel,
+  paidSubmitButtonLabel,
+  type FreePostingInfo
+} from "@/lib/free-requests";
 
-export function PostRequestForm() {
+type PostRequestFormProps = {
+  freePostingInfo: FreePostingInfo;
+};
+
+export function PostRequestForm({ freePostingInfo }: PostRequestFormProps) {
+  const stripeEnabled = Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+  const paypalEnabled = Boolean(process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID);
+  const cardCheckoutEnabled =
+    !freePostingInfo.nextPostIsFree && (stripeEnabled || paypalEnabled);
+  const nextPostIsFree = freePostingInfo.nextPostIsFree;
   const [place, setPlace] = useState<PlaceSelection | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -55,7 +70,69 @@ export function PostRequestForm() {
       const result = await createRequest(formData);
       if (result?.error) {
         setError(result.error);
+        return;
       }
+
+      if (result?.needsManualPayment && result.requestId) {
+        window.location.href = "/my-requests?payment_pending=1";
+        return;
+      }
+
+      if (result?.needsPayPalCheckout && result.requestId) {
+        try {
+          const response = await fetch("/api/paypal/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({ requestId: result.requestId })
+          });
+          const data = await response.json();
+
+          if (!response.ok || !data.url) {
+            setError(
+              data.error ??
+                "Request saved — go to My requests to complete payment."
+            );
+            return;
+          }
+
+          window.location.href = data.url;
+          return;
+        } catch {
+          setError("Request saved — go to My requests to complete payment.");
+          return;
+        }
+      }
+
+      if (result?.needsStripeCheckout && result.requestId) {
+        try {
+          const response = await fetch("/api/stripe/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({ requestId: result.requestId })
+          });
+          const data = await response.json();
+
+          if (!response.ok || !data.url) {
+            setError(
+              data.error ??
+                "Request saved — go to My requests to complete payment."
+            );
+            return;
+          }
+
+          window.location.href = data.url;
+          return;
+        } catch {
+          setError("Request saved — go to My requests to complete payment.");
+          return;
+        }
+      }
+
+      window.location.href = result.isFreePromo
+        ? "/my-requests?free_promo=1"
+        : "/my-requests";
     });
   }
 
@@ -116,6 +193,13 @@ export function PostRequestForm() {
         />
         <p className="text-sm text-peek-muted">
           Suggested: £5-£20 for a quick check.
+          {nextPostIsFree
+            ? freeBudgetHint()
+            : stripeEnabled
+              ? " You'll secure payment when you post — charged only when your Peek delivers the answer."
+              : paypalEnabled
+                ? " You'll pay by card or Apple Pay when you post — charged only when your Peek delivers the answer."
+                : " After posting you'll see payment details on My requests — your request goes live once payment is confirmed."}
         </p>
       </div>
 
@@ -128,9 +212,17 @@ export function PostRequestForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="btn-primary w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
+        className={`w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-60 ${
+          nextPostIsFree
+            ? "inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-3 font-semibold text-white shadow-sm transition duration-200 hover:bg-emerald-600 hover:shadow-md active:scale-[0.98]"
+            : "btn-primary"
+        }`}
       >
-        {isPending ? "Posting…" : "Post it"}
+        {isPending
+          ? "Posting…"
+          : nextPostIsFree
+            ? freeSubmitButtonLabel(freePostingInfo)
+            : paidSubmitButtonLabel(cardCheckoutEnabled)}
       </button>
     </form>
   );

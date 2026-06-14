@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
+  confirmPaymentReceived,
   deleteRequest,
   updateRequestStatus
 } from "@/app/admin/actions";
@@ -14,7 +15,12 @@ type AdminPanelProps = {
   users: AdminUserRow[];
 };
 
-const STATUSES: RequestStatus[] = ["open", "claimed", "completed"];
+const STATUSES: RequestStatus[] = [
+  "open",
+  "pending_approval",
+  "claimed",
+  "completed"
+];
 
 function formatDate(value: string) {
   return new Date(value).toLocaleString("en-GB", {
@@ -43,6 +49,26 @@ export function AdminPanel({ requests, users }: AdminPanelProps) {
         refresh();
       } else {
         setError(result.error ?? "Something went wrong.");
+      }
+    });
+  }
+
+  function handleConfirmPayment(requestId: string, title: string) {
+    if (
+      !window.confirm(
+        `Confirm payment received for "${title}"? The request will go live for Peeks.`
+      )
+    ) {
+      return;
+    }
+
+    setError(null);
+    startTransition(async () => {
+      const result = await confirmPaymentReceived(requestId);
+      if (result.ok) {
+        refresh();
+      } else {
+        setError(result.error ?? "Could not confirm payment.");
       }
     });
   }
@@ -95,7 +121,7 @@ export function AdminPanel({ requests, users }: AdminPanelProps) {
               {requests.length === 0 && (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="px-3 py-8 text-center text-peek-muted"
                   >
                     No requests yet.
@@ -117,11 +143,32 @@ export function AdminPanel({ requests, users }: AdminPanelProps) {
                   <td className="px-3 py-4 font-semibold text-peek-accent">
                     £{request.budget}
                   </td>
+                  <td className="px-3 py-4 capitalize text-peek-muted">
+                    {request.payment_status ?? "—"}
+                    {request.payment_provider && (
+                      <span className="block text-xs normal-case text-peek-muted">
+                        {request.payment_provider}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-3 py-4 whitespace-nowrap text-peek-muted">
                     {formatDate(request.created_at)}
                   </td>
                   <td className="px-3 py-4">
                     <div className="flex flex-wrap items-center gap-2">
+                      {request.payment_status === "pending" &&
+                        request.payment_provider === "manual" && (
+                          <button
+                            type="button"
+                            disabled={isPending}
+                            onClick={() =>
+                              handleConfirmPayment(request.id, request.title)
+                            }
+                            className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Confirm payment
+                          </button>
+                        )}
                       {STATUSES.map((status) => (
                         <button
                           key={status}

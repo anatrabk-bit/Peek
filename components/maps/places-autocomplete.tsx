@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useJsApiLoader } from "@react-google-maps/api";
 import { GOOGLE_MAPS_LIBRARIES } from "@/lib/google-maps";
 
@@ -16,27 +16,26 @@ type PlacesAutocompleteProps = {
   defaultValue?: string;
 };
 
-function readLatLng(location: google.maps.LatLng | google.maps.LatLngLiteral): {
-  lat: number;
-  lng: number;
-} {
-  if (typeof (location as google.maps.LatLng).lat === "function") {
-    const latLng = location as google.maps.LatLng;
-    return { lat: latLng.lat(), lng: latLng.lng() };
-  }
-
-  const literal = location as google.maps.LatLngLiteral;
-  return { lat: literal.lat, lng: literal.lng };
-}
+// Google Places API החדש (מ-2025) — PlaceAutocompleteElement
+type PlacePredictionSelectEvent = Event & {
+  placePrediction?: {
+    toPlace: () => {
+      fetchFields: (opts: { fields: string[] }) => Promise<void>;
+      formattedAddress?: string;
+      displayName?: string;
+      location?: { lat: () => number; lng: () => number };
+    };
+  };
+};
 
 export function PlacesAutocomplete({
   onPlaceSelect,
   disabled = false,
   defaultValue = ""
 }: PlacesAutocompleteProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const onPlaceSelectRef = useRef(onPlaceSelect);
+  const [setupError, setSetupError] = useState<string | null>(null);
 
   onPlaceSelectRef.current = onPlaceSelect;
 
@@ -45,55 +44,97 @@ export function PlacesAutocomplete({
   const { isLoaded, loadError } = useJsApiLoader({
     id: "peek-google-maps",
     googleMapsApiKey: apiKey,
-    libraries: GOOGLE_MAPS_LIBRARIES
+    libraries: GOOGLE_MAPS_LIBRARIES,
+    version: "weekly"
   });
 
   useEffect(() => {
-    if (!isLoaded || !inputRef.current) {
+    if (!isLoaded || !containerRef.current || disabled) {
       return;
     }
 
-    const input = inputRef.current;
+    let cancelled = false;
+    const container = containerRef.current;
 
-    const autocomplete = new google.maps.places.Autocomplete(input, {
-      fields: ["formatted_address", "geometry", "name", "place_id"]
-    });
+    async function initAutocomplete() {
+      try {
+        const placesLib = (await google.maps.importLibrary(
+          "places"
+        )) as google.maps.PlacesLibrary & {
+          PlaceAutocompleteElement?: new (
+            options?: Record<string, unknown>
+          ) => HTMLElement;
+        };
 
-    autocompleteRef.current = autocomplete;
+        const PlaceAutocompleteElement = placesLib.PlaceAutocompleteElement;
 
-    const listener = autocomplete.addListener("place_changed", () => {
-      // Defer so getPlace() is populated after the dropdown selection (Google quirk).
-      window.setTimeout(() => {
-        const place = autocomplete.getPlace();
-        const geometry = place.geometry?.location;
-
-        if (!geometry) {
+        if (!PlaceAutocompleteElement) {
+          setSetupError(
+            "Places API (New) is required. Enable it in Google Cloud Console."
+          );
           return;
         }
 
-        const { lat, lng } = readLatLng(geometry);
-        const location =
-          place.formatted_address?.trim() ||
-          place.name?.trim() ||
-          input.value.trim();
+        if (cancelled) return;
 
-        if (!location || Number.isNaN(lat) || Number.isNaN(lng)) {
-          return;
-        }
+        container.innerHTML = "";
+        const autocomplete = new PlaceAutocompleteElement({});
+        // עיצוב שיתאים לשאר שדות הטופס (.input-field)
+        autocomplete.style.width = "100%";
+        autocomplete.style.border = "none";
+        autocomplete.style.background = "transparent";
+        autocomplete.style.colorScheme = "light";
+        container.appendChild(autocomplete);
 
-        onPlaceSelectRef.current({
-          location,
-          latitude: lat,
-          longitude: lng
+        autocomplete.addEventListener("gmp-select", async (event: Event) => {
+          const selectEvent = event as PlacePredictionSelectEvent;
+          const placePrediction = selectEvent.placePrediction;
+          if (!placePrediction) return;
+
+          const place = placePrediction.toPlace();
+          await place.fetchFields({
+            fields: ["formattedAddress", "displayName", "location"]
+          });
+
+          const location =
+            place.formattedAddress?.trim() ||
+            place.displayName?.trim() ||
+            "";
+          const lat = place.location?.lat();
+          const lng = place.location?.lng();
+
+          if (!location || lat === undefined || lng === undefined) return;
+
+          onPlaceSelectRef.current({
+            location,
+            latitude: lat,
+            longitude: lng
+          });
         });
-      }, 0);
-    });
+
+        autocomplete.addEventListener("gmp-error", () => {
+          setSetupError(
+            "Google denied the address search. Add http://localhost:3001/* to your API key referrers and enable Places API (New)."
+          );
+        });
+      } catch (err) {
+        if (!cancelled) {
+          setSetupError(
+            err instanceof Error
+              ? err.message
+              : "Could not start address search."
+          );
+        }
+      }
+    }
+
+    initAutocomplete();
 
     return () => {
-      google.maps.event.removeListener(listener);
-      autocompleteRef.current = null;
+      cancelled = true;
+      container.innerHTML = "";
     };
-  }, [isLoaded]);
+  }, [isLoaded, disabled, defaultValue]);
 
   if (!apiKey) {
     return (
@@ -106,22 +147,31 @@ export function PlacesAutocomplete({
   if (loadError) {
     return (
       <p className="text-sm text-red-600">
-        Could not load Google Maps. Check your API key.
+        Could not load Google Maps. Check your API key and Google Cloud settings.
       </p>
     );
   }
 
+  if (setupError) {
+    return <p className="text-sm text-red-600">{setupError}</p>;
+  }
+
   return (
-    <input
-      ref={inputRef}
-      id="location"
-      name="location_display"
-      type="text"
-      defaultValue={defaultValue}
-      disabled={disabled || !isLoaded}
-      autoComplete="off"
-      placeholder="Start typing an address…"
-      className="input-field"
-    />
+    <div className="space-y-2">
+      <div
+        className={`input-field p-0 focus-within:border-peek-primary focus-within:ring-2 focus-within:ring-sky-100 ${
+          disabled ? "pointer-events-none opacity-60" : ""
+        } ${!isLoaded ? "bg-peek-card" : ""}`}
+      >
+        <div
+          ref={containerRef}
+          className="places-autocomplete-host w-full"
+          aria-busy={!isLoaded}
+        />
+      </div>
+      {!isLoaded && (
+        <p className="text-sm text-peek-muted">Connecting to Google Maps…</p>
+      )}
+    </div>
   );
 }

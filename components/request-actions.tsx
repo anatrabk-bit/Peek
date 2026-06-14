@@ -2,9 +2,16 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { claimRequest, submitResponse } from "@/app/requests/[id]/actions";
+import { claimRequest } from "@/app/requests/[id]/actions";
+import { AnswerRatingFlow } from "@/components/answer-rating-flow";
+import { PeekApprovalPanel } from "@/components/peek-approval-panel";
+import { RatingSection } from "@/components/rating-form";
+import { SubmitResponseForm } from "@/components/submit-response-form";
 import { createClient } from "@/lib/supabase/client";
+import { peekCanSubmitResponse } from "@/lib/request-status-labels";
+import type { AuthUserSummary } from "@/lib/auth-user";
 import type { MarketplaceRequest, RequestResponse } from "@/types/request";
+import type { RequestRatings, UserRatingSummary } from "@/types/rating";
 
 const LOGIN_REQUIRED_MESSAGE = "You need to log in to claim this job.";
 
@@ -12,28 +19,63 @@ type RequestActionsProps = {
   request: MarketplaceRequest;
   userId: string | null;
   existingResponse: RequestResponse | null;
+  requestRatings: RequestRatings;
+  peekRating?: UserRatingSummary | null;
+  pendingPeek?: AuthUserSummary | null;
+  peekDisplay?: AuthUserSummary | null;
+  peekJobsCompleted?: number;
 };
+
+function ResponseCard({
+  title,
+  response
+}: {
+  title: string;
+  response: RequestResponse;
+}) {
+  return (
+    <div className="mt-8 space-y-4">
+      <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sky-900">
+        <p className="font-semibold">{title}</p>
+        <p className="mt-2 text-sm leading-relaxed">{response.answer}</p>
+        {response.photo_url && (
+          <a
+            href={response.photo_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-block text-sm font-semibold text-peek-primary hover:underline"
+          >
+            View photo
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function RequestActions({
   request,
   userId,
-  existingResponse
+  existingResponse,
+  requestRatings,
+  peekRating = null,
+  pendingPeek = null,
+  peekDisplay = null,
+  peekJobsCompleted = 0
 }: RequestActionsProps) {
-  const [claimed, setClaimed] = useState(
-    request.status === "claimed" && request.runner_id === userId
-  );
-  const [completed, setCompleted] = useState(
-    request.status === "completed" || !!existingResponse
-  );
+  const isOwner = !!(userId && request.user_id === userId);
+  const isAssignedRunner = !!(userId && request.runner_id === userId);
   const [error, setError] = useState<string | null>(null);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const isAssignedRunner =
-    userId && (request.runner_id === userId || claimed);
-  const isOpen = request.status === "open" && !claimed && !completed;
-  const canClaim = isOpen && !request.runner_id;
+  const completed =
+    request.status === "completed" || !!existingResponse;
+  const isOpen =
+    request.status === "open" && !isAssignedRunner && !completed;
+  const canClaim = isOpen && !request.runner_id && !isOwner;
+  const canSubmit = peekCanSubmitResponse(request.status);
 
   async function handleClaim() {
     setError(null);
@@ -52,44 +94,158 @@ export function RequestActions({
 
     startTransition(async () => {
       const result = await claimRequest(request.id);
+      if (result?.needsAuth) {
+        setError(LOGIN_REQUIRED_MESSAGE);
+        setShowLoginPrompt(true);
+        return;
+      }
       if (result?.error) {
         setError(result.error);
       }
     });
   }
 
-  function handleSubmit(formData: FormData) {
-    setError(null);
-    setSubmitMessage(null);
-    startTransition(async () => {
-      const result = await submitResponse(request.id, formData);
-      if (result?.ok) {
-        setCompleted(true);
-        setSubmitMessage("Response submitted. Nice work!");
-      } else if (result?.error) {
-        setError(result.error);
-      }
-    });
+  if (isAssignedRunner && request.status === "pending_approval" && !completed) {
+    return (
+      <div className="mt-6 space-y-4">
+        <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4 text-violet-900">
+          <p className="font-semibold">Waiting for the client&apos;s approval</p>
+          <p className="mt-2 text-sm leading-relaxed">
+            They&apos;re reviewing your profile now. Once they approve you,
+            you&apos;ll be able to start the job and submit your answer.
+          </p>
+        </div>
+        <Link
+          href={`/requests/${request.id}/claimed`}
+          className="inline-block text-sm font-semibold text-peek-primary hover:underline"
+        >
+          View claim status →
+        </Link>
+        {error && (
+          <p className="text-sm text-red-600" role="alert">
+            {error}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (isAssignedRunner && canSubmit && !completed) {
+    return (
+      <div className="mt-6 space-y-6">
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
+          <p className="font-semibold">You&apos;re approved — go for it</p>
+          <p className="mt-2 text-sm leading-relaxed">
+            The client approved you. Complete the check, then submit your answer
+            below.
+          </p>
+        </div>
+        <SubmitResponseForm
+          requestId={request.id}
+          redirectOnSuccess={`/requests/${request.id}`}
+        />
+        {error && (
+          <p className="text-sm text-red-600" role="alert">
+            {error}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (isOwner) {
+    if (completed && existingResponse) {
+      return (
+        <AnswerRatingFlow
+          requestId={request.id}
+          requestTitle={request.title}
+          response={existingResponse}
+          existingRating={requestRatings.fromRequester}
+          peekRating={peekRating}
+          peekDisplay={peekDisplay}
+          runnerId={request.runner_id}
+          peekJobsCompleted={peekJobsCompleted}
+        />
+      );
+    }
+
+    if (
+      request.status === "pending_approval" &&
+      request.runner_id &&
+      pendingPeek
+    ) {
+      return (
+        <PeekApprovalPanel
+          requestId={request.id}
+          peek={pendingPeek}
+          peekRating={peekRating}
+          runnerId={request.runner_id}
+          jobsCompleted={peekJobsCompleted}
+        />
+      );
+    }
+
+    if (request.status === "claimed") {
+      return (
+        <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
+          <p className="font-semibold">Your Peek is on the job</p>
+          <p className="mt-2 text-sm leading-relaxed">
+            You approved them — they&apos;re checking things for you now.
+            You&apos;ll see the answer here when they&apos;re done.
+          </p>
+        </div>
+      );
+    }
+
+    if (request.status === "open") {
+      return (
+        <div className="mt-8 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sky-900">
+          <p className="font-semibold">Waiting for a Peek</p>
+          <p className="mt-2 text-sm leading-relaxed">
+            Your request is live. When a Peek applies, you&apos;ll review their
+            profile here before they start.
+          </p>
+          <Link
+            href="/my-requests"
+            className="mt-3 inline-block text-sm font-semibold text-peek-primary hover:underline"
+          >
+            ← Back to my requests
+          </Link>
+        </div>
+      );
+    }
+
+    return (
+      <div className="mt-8 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sky-900">
+        <p className="font-semibold">This request is complete.</p>
+      </div>
+    );
+  }
+
+  if (isAssignedRunner && completed && existingResponse) {
+    return (
+      <>
+        <ResponseCard title="Response submitted" response={existingResponse} />
+        {submitMessage && (
+          <p className="mt-4 text-sm text-emerald-700">{submitMessage}</p>
+        )}
+        {request.user_id && (
+          <RatingSection
+            requestId={request.id}
+            existingRating={requestRatings.fromPeek}
+            title="Rate this client"
+            description="Help other Peeks know what to expect before they take a job."
+            thanksMessage="Thanks — other Peeks will see this client's average rating on open jobs."
+            emptyScoreError="Tap a star to rate this client."
+          />
+        )}
+      </>
+    );
   }
 
   if (completed && existingResponse) {
     return (
-      <div className="mt-8 space-y-4">
-        <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sky-900">
-          <p className="font-semibold">Response submitted</p>
-          <p className="mt-2 text-sm leading-relaxed">{existingResponse.answer}</p>
-          {existingResponse.photo_url && (
-            <a
-              href={existingResponse.photo_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-block text-sm font-semibold text-peek-primary hover:underline"
-            >
-              View photo
-            </a>
-          )}
-        </div>
-      </div>
+      <ResponseCard title="Response submitted" response={existingResponse} />
     );
   }
 
@@ -104,10 +260,14 @@ export function RequestActions({
     );
   }
 
-  if (request.status === "claimed" && request.runner_id && request.runner_id !== userId) {
+  if (
+    (request.status === "pending_approval" || request.status === "claimed") &&
+    request.runner_id &&
+    request.runner_id !== userId
+  ) {
     return (
       <p className="mt-6 text-sm text-peek-muted">
-        Another Peek has already taken this one.
+        Another Peek has already applied for this one.
       </p>
     );
   }
@@ -117,7 +277,8 @@ export function RequestActions({
       {canClaim && !showLoginPrompt && (
         <>
           <p className="text-sm text-peek-muted">
-            You&apos;ll confirm when it&apos;s done - they pay only then.
+            The client will review your profile before you start — like Uber
+            driver approval.
           </p>
           <button
             type="button"
@@ -125,7 +286,7 @@ export function RequestActions({
             disabled={isPending}
             className="btn-primary disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isPending ? "Claiming…" : "I'll take this on"}
+            {isPending ? "Applying…" : "Apply for this job"}
           </button>
         </>
       )}
@@ -149,60 +310,6 @@ export function RequestActions({
             Cancel
           </button>
         </div>
-      )}
-
-      {(claimed || isAssignedRunner) && (
-        <>
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
-            <p className="font-semibold">
-              You&apos;ve claimed this request! Go check it out and come back to
-              submit your answer.
-            </p>
-          </div>
-
-          <form action={handleSubmit} className="card-static space-y-5">
-            <div className="space-y-2">
-              <label
-                htmlFor="answer"
-                className="text-sm font-semibold text-peek-text"
-              >
-                Your answer
-              </label>
-              <textarea
-                id="answer"
-                name="answer"
-                required
-                rows={5}
-                placeholder="What did you find? Include anything they asked for."
-                className="input-field resize-y"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label
-                htmlFor="photo"
-                className="text-sm font-semibold text-peek-text"
-              >
-                Photo (optional)
-              </label>
-              <input
-                id="photo"
-                name="photo"
-                type="file"
-                accept="image/*"
-                className="block w-full text-sm text-peek-muted file:mr-4 file:rounded-full file:border-0 file:bg-sky-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-peek-primary hover:file:bg-sky-100"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isPending}
-              className="btn-primary disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isPending ? "Submitting…" : "Submit response"}
-            </button>
-          </form>
-        </>
       )}
 
       {error && !showLoginPrompt && (

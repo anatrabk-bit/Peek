@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { SubmitResponseForm } from "@/components/submit-response-form";
 import { createClient } from "@/lib/supabase/server";
+import { REQUEST_STATUS_LABELS } from "@/lib/request-status-labels";
 import { getRequestById } from "@/lib/supabase/requests";
 
 type ClaimedPageProps = {
@@ -29,9 +31,15 @@ export default async function ClaimedConfirmationPage({
     notFound();
   }
 
-  if (request.runner_id !== user.id || request.status !== "claimed") {
+  if (request.runner_id !== user.id) {
     redirect(`/requests/${params.id}`);
   }
+
+  if (request.status !== "pending_approval" && request.status !== "claimed") {
+    redirect(`/requests/${params.id}`);
+  }
+
+  const awaitingApproval = request.status === "pending_approval";
 
   const mapsHref =
     request.latitude != null && request.longitude != null
@@ -41,13 +49,23 @@ export default async function ClaimedConfirmationPage({
   return (
     <section className="page-container">
       <article className="card-static mx-auto max-w-3xl space-y-8">
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
-          <p className="text-lg font-semibold">You&apos;ve claimed this job!</p>
-          <p className="mt-2 text-sm leading-relaxed">
-            Head to the address below, complete the task, then come back to
-            submit your answer.
-          </p>
-        </div>
+        {awaitingApproval ? (
+          <div className="rounded-2xl border border-violet-200 bg-violet-50 p-5 text-violet-900">
+            <p className="text-lg font-semibold">Application sent!</p>
+            <p className="mt-2 text-sm leading-relaxed">
+              The client is reviewing your profile. You&apos;ll be able to start
+              once they approve you — check back here or refresh this page.
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
+            <p className="text-lg font-semibold">You&apos;re approved — go for it!</p>
+            <p className="mt-2 text-sm leading-relaxed">
+              Head to the address below, complete the task, then come back to
+              submit your answer.
+            </p>
+          </div>
+        )}
 
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-peek-muted">
@@ -63,14 +81,16 @@ export default async function ClaimedConfirmationPage({
             Address
           </p>
           <p className="text-lg font-medium text-peek-text">{request.location}</p>
-          <a
-            href={mapsHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block text-sm font-semibold text-peek-primary hover:underline"
-          >
-            Open in Google Maps →
-          </a>
+          {!awaitingApproval && (
+            <a
+              href={mapsHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block text-sm font-semibold text-peek-primary hover:underline"
+            >
+              Open in Google Maps →
+            </a>
+          )}
         </div>
 
         <div className="grid gap-4 rounded-2xl bg-peek-card p-5 sm:grid-cols-2">
@@ -86,8 +106,8 @@ export default async function ClaimedConfirmationPage({
             <p className="text-xs font-semibold uppercase tracking-wide text-peek-muted">
               Status
             </p>
-            <p className="mt-1 text-2xl font-semibold capitalize text-peek-text">
-              {request.status}
+            <p className="mt-1 text-2xl font-semibold text-peek-text">
+              {REQUEST_STATUS_LABELS[request.status]}
             </p>
           </div>
         </div>
@@ -97,12 +117,19 @@ export default async function ClaimedConfirmationPage({
           <p className="text-body text-peek-text">{request.details}</p>
         </div>
 
+        {!awaitingApproval && (
+          <div className="space-y-4">
+            <h2 className="heading-section text-lg">Submit your answer</h2>
+            <SubmitResponseForm
+              requestId={request.id}
+              redirectOnSuccess={`/requests/${request.id}`}
+            />
+          </div>
+        )}
+
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Link
-            href={`/requests/${request.id}`}
-            className="btn-primary text-center"
-          >
-            Submit your answer
+          <Link href={`/requests/${request.id}`} className="btn-secondary text-center">
+            View request page
           </Link>
           <Link href="/requests" className="btn-secondary text-center">
             Browse more jobs

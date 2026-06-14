@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+// יוצר חיבור ל-Supabase מהשרת — קורא cookies מהבקשה הנוכחית
 export function createClient() {
   const cookieStore = cookies();
 

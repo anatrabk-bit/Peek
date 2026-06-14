@@ -8,21 +8,66 @@
 
 @layer base {
   body {
-    @apply bg-peek-bg font-sans text-peek-text antialiased;
+    @apply font-sans text-peek-text antialiased;
+    background-color: #f8fafc;
+    background-image: linear-gradient(
+      180deg,
+      rgb(240 249 255 / 0.9) 0%,
+      #fafaf9 35%,
+      #fafaf9 100%
+    );
+    background-attachment: fixed;
+  }
+
+  @media (max-width: 639px) {
+    body {
+      padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
+  @media (display-mode: standalone) {
+    body {
+      padding-top: env(safe-area-inset-top, 0px);
+    }
   }
 }
 
 @layer components {
   .page-container {
-    @apply mx-auto max-w-5xl px-6 py-10;
+    @apply mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10;
   }
 
   .heading-hero {
-    @apply text-4xl font-bold tracking-tight text-balance sm:text-5xl;
+    @apply text-3xl font-bold tracking-tight text-balance sm:text-4xl lg:text-5xl;
   }
 
   .heading-section {
-    @apply text-2xl font-semibold text-peek-text;
+    @apply text-xl font-semibold text-peek-text sm:text-2xl;
+  }
+
+  .peek-site-footer {
+    @apply block;
+  }
+
+  @media (max-width: 639px) {
+    .peek-site-footer {
+      @apply hidden;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+      @apply min-h-11;
+    }
+  }
+
+  @media (display-mode: standalone) {
+    .peek-site-footer {
+      @apply hidden;
+    }
+
+    .peek-install-prompt {
+      @apply hidden;
+    }
   }
 
   .text-body {
@@ -30,23 +75,95 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-peek-accent px-6 py-3 font-semibold text-white transition hover:opacity-90;
+    @apply inline-flex items-center justify-center rounded-full bg-peek-accent px-6 py-3 font-semibold text-white shadow-sm transition duration-200 hover:opacity-95 hover:shadow-md active:scale-[0.98];
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-full border-2 border-peek-primary px-6 py-3 font-semibold text-peek-primary transition hover:bg-sky-50;
+    @apply inline-flex items-center justify-center rounded-full border-2 border-peek-primary px-6 py-3 font-semibold text-peek-primary transition duration-200 hover:bg-sky-50 hover:shadow-sm active:scale-[0.98];
   }
 
   .btn-hero-outline {
-    @apply inline-flex items-center justify-center rounded-full border-2 border-white px-6 py-3 font-semibold text-white transition hover:bg-white/10;
+    @apply inline-flex items-center justify-center rounded-full border-2 border-white px-6 py-3 font-semibold text-white transition duration-200 hover:bg-white/10 active:scale-[0.98];
+  }
+
+  .btn-hero-outline:hover {
+    box-shadow: 0 0 40px -8px rgb(14 165 233 / 0.45);
+  }
+
+  .btn-fun {
+    @apply transition-opacity duration-200 hover:opacity-95;
   }
 
   .card {
-    @apply rounded-2xl bg-white p-6 shadow-card transition-shadow duration-200 hover:shadow-card-hover;
+    @apply rounded-2xl bg-white p-6 shadow-card transition duration-200 hover:shadow-card-hover;
   }
 
   .card-static {
     @apply rounded-2xl bg-white p-6 shadow-card;
+  }
+
+  .card-fun {
+    @apply transition duration-200 hover:shadow-card-hover;
+  }
+
+  .peek-hero {
+    @apply bg-gradient-to-b from-peek-primary to-peek-primary-dark;
+  }
+
+  .peek-blob {
+    @apply pointer-events-none absolute rounded-full bg-white/10 blur-3xl;
+  }
+
+  .peek-blob-a {
+    left: -4rem;
+    top: 2rem;
+    height: 14rem;
+    width: 14rem;
+    animation: float 8s ease-in-out infinite;
+  }
+
+  .peek-blob-b {
+    right: -3rem;
+    top: 40%;
+    height: 11rem;
+    width: 11rem;
+    animation: float 11s ease-in-out infinite reverse;
+  }
+
+  .peek-blob-c {
+    bottom: -2rem;
+    left: 35%;
+    height: 9rem;
+    width: 9rem;
+    animation: float 9s ease-in-out infinite;
+  }
+
+  .peek-fade-in {
+    animation: peek-fade-in 0.55s ease-out both;
+  }
+
+  .peek-delay-1 { animation-delay: 0.08s; }
+  .peek-delay-2 { animation-delay: 0.16s; }
+  .peek-delay-3 { animation-delay: 0.24s; }
+  .peek-delay-4 { animation-delay: 0.32s; }
+  .peek-delay-5 { animation-delay: 0.4s; }
+
+  .nav-link {
+    @apply relative transition-colors duration-200 hover:text-peek-primary;
+  }
+
+  .nav-link::after {
+    content: "";
+    @apply absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-peek-primary transition-all duration-200;
+  }
+
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+
+  /* Account menu chevron — rotates when <details> is open */
+  details[open] .account-menu-chevron {
+    transform: rotate(180deg);
   }
 
   .input-field {
@@ -55,5 +172,83 @@
 
   .badge-open {
     @apply rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-700;
+  }
+
+  .peek-slide-up {
+    animation: peek-slide-up 0.35s ease-out;
+  }
+
+  .peek-rating-prompt {
+    animation: peek-pulse-ring 2.5s ease-in-out infinite;
+  }
+}
+
+@keyframes peek-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes peek-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes peek-pulse-ring {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(251, 191, 36, 0);
+  }
+}
+
+@layer components {
+  /* Google Places autocomplete dropdown + new PlaceAutocompleteElement */
+  .pac-container {
+    z-index: 10000 !important;
+  }
+
+  .places-autocomplete-host {
+    @apply min-h-[3rem];
+  }
+
+  .places-autocomplete-host gmp-place-autocomplete {
+    width: 100%;
+    display: block;
+    color-scheme: light;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* שדה הקלדה הפנימי של Google — כמו input-field */
+  gmp-place-autocomplete::part(input) {
+    font-family: inherit;
+    font-size: 1rem;
+    line-height: 1.5;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #18181b;
+    color-scheme: light;
+  }
+
+  gmp-place-autocomplete::part(input)::placeholder {
+    color: #71717a;
   }
 }

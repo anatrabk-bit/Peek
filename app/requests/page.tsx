@@ -1,23 +1,18 @@
-import dynamic from "next/dynamic";
-import { getOpenRequests } from "@/app/requests/actions";
-
-const BrowseRequestsView = dynamic(
-  () =>
-    import("@/components/maps/browse-requests-view").then(
-      (mod) => mod.BrowseRequestsView
-    ),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex h-[420px] items-center justify-center rounded-2xl bg-peek-card text-sm text-peek-muted">
-        Loading map…
-      </div>
-    )
-  }
-);
+import { BrowseRequestsView } from "@/components/maps/browse-requests-view";
+import { getRequesterRatingSummaries } from "@/lib/supabase/ratings";
+import { getPublicUserDisplays } from "@/lib/supabase/public-user";
+import { getOpenRequests } from "@/lib/supabase/requests";
+import type { AuthUserSummary } from "@/lib/auth-user";
 
 export default async function BrowseRequestsPage() {
-  const requests = await getOpenRequests();
+  const { requests, error: fetchError } = await getOpenRequests();
+  const requesterIds = requests
+    .map((request) => request.user_id)
+    .filter((id): id is string => !!id);
+  const [requesterRatings, requesterDisplays] = await Promise.all([
+    getRequesterRatingSummaries(requesterIds),
+    getPublicUserDisplays(requesterIds)
+  ]);
 
   return (
     <section className="page-container space-y-8">
@@ -31,7 +26,12 @@ export default async function BrowseRequestsPage() {
         </p>
       </div>
 
-      <BrowseRequestsView requests={requests} />
+      <BrowseRequestsView
+        requests={requests}
+        fetchError={fetchError}
+        requesterRatings={requesterRatings}
+        requesterDisplays={requesterDisplays}
+      />
     </section>
   );
 }

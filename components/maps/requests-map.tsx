@@ -35,7 +35,8 @@ export function RequestsMap({ requests, userLocation }: RequestsMapProps) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: "peek-google-maps",
     googleMapsApiKey: apiKey,
-    libraries: GOOGLE_MAPS_LIBRARIES
+    libraries: GOOGLE_MAPS_LIBRARIES,
+    version: "weekly"
   });
 
   const mappableRequests = useMemo(

@@ -1,4 +1,6 @@
-export type RequestStatus = "open" | "claimed" | "completed";
+import type { PaymentRecord } from "@/types/payment";
+
+export type RequestStatus = "open" | "pending_approval" | "claimed" | "completed";
 
 export type MarketplaceRequest = {
   id: string;
@@ -7,9 +9,12 @@ export type MarketplaceRequest = {
   budget: number;
   details: string;
   status: RequestStatus;
+  user_id?: string | null;
   runner_id?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  created_at?: string;
+  payment?: PaymentRecord | null;
 };
 
 export type RequestResponse = {

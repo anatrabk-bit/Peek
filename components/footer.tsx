@@ -1,8 +1,12 @@
 import Link from "next/link";
 
-export function Footer() {
+type FooterProps = {
+  className?: string;
+};
+
+export function Footer({ className }: FooterProps) {
   return (
-    <footer className="border-t border-zinc-200 bg-white">
+    <footer className={`border-t border-zinc-200 bg-white ${className ?? ""}`}>
       <div className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-10 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <Link href="/" className="text-xl font-bold text-peek-primary">

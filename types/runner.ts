@@ -1,3 +1,5 @@
+import type { PeekPayoutDetails } from "@/types/payout";
+
 export type RunnerProfile = {
   user_id: string;
   latitude: number | null;
@@ -5,7 +7,7 @@ export type RunnerProfile = {
   radius_km: number;
   notifications_enabled: boolean;
   updated_at: string;
-};
+} & PeekPayoutDetails;
 
 export type PushSubscriptionRecord = {
   endpoint: string;

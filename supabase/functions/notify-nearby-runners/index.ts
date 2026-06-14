@@ -1,4 +1,4 @@
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createClient } from "@supabase/supabase-js";
 import webpush from "npm:web-push@3.6.7";
 
 const corsHeaders = {
@@ -104,6 +104,19 @@ Deno.serve(async (req) => {
       }
 
       const notificationTitle = `New request ${formatDistanceKm(distanceKm)} away - ${title} £${budget}`;
+
+      try {
+        await supabase.from("user_notifications").insert({
+          user_id: runner.user_id,
+          request_id,
+          event: "new_request_nearby",
+          title: "New job nearby",
+          body: `"${title}" is open — apply if you're nearby.`,
+          url: `/requests/${request_id}`
+        });
+      } catch (insertError) {
+        console.error("In-app notification insert failed:", insertError);
+      }
 
       const { data: subscriptions } = await supabase
         .from("push_subscriptions")

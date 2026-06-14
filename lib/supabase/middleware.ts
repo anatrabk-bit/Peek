@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+// רץ על כל בקשה — מרענן את ה-session cookies כדי שלא יפוגו
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request
