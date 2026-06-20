@@ -35,6 +35,8 @@ export async function getDashboardSummary(
   ]);
 
   const myRequests = (myRequestsResult.data ?? []) as MarketplaceRequest[];
+
+  const myActiveRequests = myRequests.filter((request) =>
     isRequestActive(request.status)
   ).length;
   const myCompletedRequests = myRequests.filter(
