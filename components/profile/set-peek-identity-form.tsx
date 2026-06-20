@@ -1,16 +1,25 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { updatePeekIdentityAction } from "@/app/profile/peek-identity-actions";
-import { PEEK_AVATAR_ICONS } from "@/lib/avatar-icons";
+import { PEEK_AVATAR_OPTIONS } from "@/lib/avatar-icons";
+import { NICKNAME_MAX_LENGTH } from "@/lib/nickname-suggestions";
 import type { PeekProfile } from "@/lib/supabase/peek-profile";
 
 type SetPeekIdentityFormProps = {
   profile: PeekProfile;
+  nicknameSuggestions: string[];
 };
 
-export function SetPeekIdentityForm({ profile }: SetPeekIdentityFormProps) {
-  const [nickname, setNickname] = useState(profile.nickname);
+export function SetPeekIdentityForm({
+  profile,
+  nicknameSuggestions
+}: SetPeekIdentityFormProps) {
+  const initialNickname = useMemo(
+    () => profile.nickname,
+    [profile.nickname]
+  );
+  const [nickname, setNickname] = useState(initialNickname);
   const [avatarIcon, setAvatarIcon] = useState(profile.avatar_icon);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +46,7 @@ export function SetPeekIdentityForm({ profile }: SetPeekIdentityFormProps) {
         <h3 className="heading-section text-lg">Your anonymous identity</h3>
         <p className="mt-2 text-sm text-peek-muted">
           Others only see your nickname and icon — never your real name or
-          email.
+          email. Spaces are welcome (e.g. Coffee Hero).
         </p>
       </div>
 
@@ -51,33 +60,51 @@ export function SetPeekIdentityForm({ profile }: SetPeekIdentityFormProps) {
           type="text"
           required
           minLength={2}
-          maxLength={24}
+          maxLength={NICKNAME_MAX_LENGTH}
           value={nickname}
           onChange={(event) => setNickname(event.target.value)}
           disabled={isPending}
           className="input-field"
-          placeholder="e.g., SunnyFox"
+          placeholder="e.g., Coffee Hero"
         />
+        <p className="text-xs text-peek-muted">Tap a suggestion or type your own.</p>
+        <div className="flex flex-wrap gap-2 pt-1">
+          {nicknameSuggestions.map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              onClick={() => setNickname(suggestion)}
+              disabled={isPending}
+              className={`rounded-full border px-3 py-1.5 text-sm font-medium transition ${
+                nickname === suggestion
+                  ? "border-peek-primary bg-sky-50 text-peek-primary"
+                  : "border-zinc-200 bg-white text-peek-text hover:border-sky-200"
+              }`}
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="space-y-2">
         <p className="text-sm font-semibold text-peek-text">Profile icon</p>
-        <div className="flex flex-wrap gap-2">
-          {PEEK_AVATAR_ICONS.map((icon) => (
+        <div className="flex flex-wrap gap-2.5">
+          {PEEK_AVATAR_OPTIONS.map(({ emoji, ring }) => (
             <button
-              key={icon}
+              key={emoji}
               type="button"
-              onClick={() => setAvatarIcon(icon)}
+              onClick={() => setAvatarIcon(emoji)}
               disabled={isPending}
-              className={`flex h-11 w-11 items-center justify-center rounded-xl border-2 text-xl transition ${
-                avatarIcon === icon
-                  ? "border-peek-primary bg-sky-50"
-                  : "border-zinc-200 bg-white hover:border-sky-200"
+              className={`flex h-12 w-12 items-center justify-center rounded-2xl border-2 text-2xl shadow-sm transition ${ring} ${
+                avatarIcon === emoji
+                  ? "border-peek-primary ring-2 ring-sky-200 scale-105"
+                  : "border-transparent hover:border-sky-200 hover:scale-105"
               }`}
-              aria-label={`Choose icon ${icon}`}
-              aria-pressed={avatarIcon === icon}
+              aria-label={`Choose icon ${emoji}`}
+              aria-pressed={avatarIcon === emoji}
             >
-              {icon}
+              {emoji}
             </button>
           ))}
         </div>

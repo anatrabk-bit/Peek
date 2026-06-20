@@ -5,6 +5,7 @@ import { StarsProgressPanel } from "@/components/profile/stars-progress-panel";
 import { RunnerSettingsPanel } from "@/components/profile/runner-settings-panel";
 import { UserAvatarIcon } from "@/components/user-avatar-icon";
 import { getProfileStats } from "@/lib/supabase/profile-stats";
+import { getNicknameSuggestionsForUser } from "@/lib/nickname-suggestions";
 import {
   getOrCreatePeekProfile,
   getPeekProfile
@@ -27,6 +28,7 @@ export default async function UserProfilePage() {
   ]);
 
   const profile = (await getPeekProfile(user.id)) ?? peekProfile;
+  const nicknameSuggestions = getNicknameSuggestionsForUser(user.id);
 
   return (
     <section className="page-container space-y-10">
@@ -49,7 +51,10 @@ export default async function UserProfilePage() {
         </div>
       </article>
 
-      <SetPeekIdentityForm profile={profile} />
+      <SetPeekIdentityForm
+        profile={profile}
+        nicknameSuggestions={nicknameSuggestions}
+      />
       <StarsProgressPanel profile={profile} />
 
       <div className="space-y-6">

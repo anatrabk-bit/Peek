@@ -1,7 +1,14 @@
 import {
-  DEFAULT_PEEK_AVATAR_ICON,
-  isPeekAvatarIcon
+  isPeekAvatarIcon,
+  resolveAvatarIcon,
+  suggestDefaultAvatarIcon
 } from "@/lib/avatar-icons";
+import {
+  isLegacyAutoNickname,
+  normalizeNickname,
+  suggestDefaultNickname,
+  validateNickname
+} from "@/lib/nickname-suggestions";
 import { starsEarnedForJob, STARS_VOUCHER_THRESHOLD } from "@/lib/stars";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -25,7 +32,15 @@ export type PublicPeekDisplay = {
 };
 
 function defaultNickname(userId: string): string {
-  return `Peek-${userId.slice(0, 4).toUpperCase()}`;
+  return suggestDefaultNickname(userId);
+}
+
+function resolveNickname(userId: string, stored: string | null): string {
+  const trimmed = stored?.trim();
+  if (!trimmed || isLegacyAutoNickname(trimmed)) {
+    return defaultNickname(userId);
+  }
+  return trimmed;
 }
 
 function mapProfile(row: {
@@ -38,10 +53,8 @@ function mapProfile(row: {
 }): PeekProfile {
   return {
     user_id: row.user_id,
-    nickname: row.nickname?.trim() || defaultNickname(row.user_id),
-    avatar_icon: isPeekAvatarIcon(row.avatar_icon)
-      ? row.avatar_icon
-      : DEFAULT_PEEK_AVATAR_ICON,
+    nickname: resolveNickname(row.user_id, row.nickname),
+    avatar_icon: resolveAvatarIcon(row.user_id, row.avatar_icon),
     peek_stars: row.peek_stars,
     vouchers_earned: row.vouchers_earned,
     first_peek_bonus_claimed: row.first_peek_bonus_claimed
@@ -79,7 +92,7 @@ export async function getPeekProfile(
     return {
       user_id: userId,
       nickname: defaultNickname(userId),
-      avatar_icon: DEFAULT_PEEK_AVATAR_ICON,
+      avatar_icon: suggestDefaultAvatarIcon(userId),
       peek_stars: 0,
       vouchers_earned: 0,
       first_peek_bonus_claimed: false
@@ -97,7 +110,7 @@ export async function getOrCreatePeekProfile(
     return {
       user_id: userId,
       nickname: defaultNickname(userId),
-      avatar_icon: DEFAULT_PEEK_AVATAR_ICON,
+      avatar_icon: suggestDefaultAvatarIcon(userId),
       peek_stars: 0,
       vouchers_earned: 0,
       first_peek_bonus_claimed: false
@@ -115,7 +128,7 @@ export async function getOrCreatePeekProfile(
     await supabase.from("peek_profiles").insert({
       user_id: userId,
       nickname: null,
-      avatar_icon: DEFAULT_PEEK_AVATAR_ICON
+      avatar_icon: suggestDefaultAvatarIcon(userId)
     });
   }
 
@@ -157,20 +170,15 @@ export async function updatePeekIdentity(input: {
     return { error: "Log in to update your profile." };
   }
 
-  const nickname = input.nickname.trim();
-  if (nickname.length < 2 || nickname.length > 24) {
-    return { error: "Nickname must be 2–24 characters." };
-  }
-
-  if (!/^[a-zA-Z0-9 _-]+$/.test(nickname)) {
-    return {
-      error: "Use letters, numbers, spaces, hyphens, or underscores only."
-    };
+  const nickname = normalizeNickname(input.nickname);
+  const nicknameError = validateNickname(nickname);
+  if (nicknameError) {
+    return { error: nicknameError };
   }
 
   const avatarIcon = isPeekAvatarIcon(input.avatarIcon)
     ? input.avatarIcon
-    : DEFAULT_PEEK_AVATAR_ICON;
+    : suggestDefaultAvatarIcon(user.id);
 
   const { error } = await supabase.from("peek_profiles").upsert({
     user_id: user.id,
