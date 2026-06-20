@@ -3,9 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { notifyRequestWentLive, sendUserNotification } from "@/lib/notifications/send";
+import { awardPeekStarsForCompletion } from "@/lib/supabase/peek-profile";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { captureClientPaymentOnAnswer } from "@/lib/payments/capture-client-payment";
-import { getPaymentForRequest } from "@/lib/supabase/payments";
 import { createClient } from "@/lib/supabase/server";
 
 function loginRedirect(requestId: string) {
@@ -43,7 +42,7 @@ async function tryClaimUpdate(
   return supabase
     .from("requests")
     .update({
-      status: "pending_approval",
+      status: "claimed",
       runner_id: userId,
       claimed_at: new Date().toISOString()
     })
@@ -79,11 +78,22 @@ export async function claimRequest(requestId: string) {
   }
 
   if (
-    (existing?.status === "pending_approval" ||
-      existing?.status === "claimed") &&
+    existing?.status === "claimed" &&
     existing.runner_id === user.id
   ) {
     redirect(`/requests/${requestId}/claimed`);
+  }
+
+  if (
+    (existing?.status === "claimed" ||
+      existing?.status === "pending_approval") &&
+    existing.runner_id &&
+    existing.runner_id !== user.id
+  ) {
+    return {
+      ok: false as const,
+      error: "Someone else already grabbed this one."
+    };
   }
 
   let { data, error } = await tryClaimUpdate(supabase, requestId, user.id);
@@ -116,7 +126,7 @@ export async function claimRequest(requestId: string) {
   if (!data) {
     return {
       ok: false as const,
-      error: `Could not apply for this job — it may already be taken. ${MIGRATION_014_HINT}`
+      error: "Someone else already grabbed this one."
     };
   }
 
@@ -141,7 +151,7 @@ export async function claimRequest(requestId: string) {
     });
   }
 
-  redirect(`/requests/${requestId}/claimed`);
+  redirect(`/requests/${requestId}`);
 }
 
 async function assertRequestOwner(requestId: string, userId: string) {
@@ -404,19 +414,6 @@ export async function submitResponse(requestId: string, formData: FormData) {
     return { ok: false as const, error: responseError.message };
   }
 
-  const payment = await getPaymentForRequest(requestId);
-
-  if (payment) {
-    const captureResult = await captureClientPaymentOnAnswer(requestId, payment);
-    if (!captureResult.ok) {
-      return {
-        ok: false as const,
-        error:
-          "Answer saved but payment could not be collected. Please try again or contact support."
-      };
-    }
-  }
-
   const { error: completeError } = await supabase
     .from("requests")
     .update({ status: "completed" })
@@ -426,6 +423,8 @@ export async function submitResponse(requestId: string, formData: FormData) {
   if (completeError) {
     return { ok: false as const, error: completeError.message };
   }
+
+  await awardPeekStarsForCompletion(user!.id);
 
   revalidatePath(`/requests/${requestId}`);
   revalidatePath("/requests");
@@ -443,94 +442,4 @@ export async function submitResponse(requestId: string, formData: FormData) {
   }
 
   return { ok: true as const };
-}
-
-export async function submitRating(requestId: string, formData: FormData) {
-  const supabase = createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { ok: false as const, error: "Log in to leave a rating." };
-  }
-
-  const score = Number(formData.get("score"));
-  const comment = String(formData.get("comment") ?? "").trim();
-
-  if (!Number.isInteger(score) || score < 1 || score > 5) {
-    return { ok: false as const, error: "Please choose a rating from 1 to 5 stars." };
-  }
-
-  const { data: request, error: requestError } = await supabase
-    .from("requests")
-    .select("user_id, runner_id, status")
-    .eq("id", requestId)
-    .single();
-
-  if (requestError || !request) {
-    return { ok: false as const, error: "Request not found." };
-  }
-
-  if (request.status !== "completed" || !request.runner_id || !request.user_id) {
-    return { ok: false as const, error: "You can rate after the request is completed." };
-  }
-
-  let ratedId: string | null = null;
-
-  if (user.id === request.user_id) {
-    ratedId = request.runner_id;
-  } else if (user.id === request.runner_id) {
-    ratedId = request.user_id;
-  } else {
-    return { ok: false as const, error: "You were not part of this request." };
-  }
-
-  const payload = {
-    request_id: requestId,
-    rater_id: user.id,
-    rated_id: ratedId,
-    score,
-    comment: comment || null
-  };
-
-  let { data, error } = await supabase
-    .from("ratings")
-    .insert(payload)
-    .select("id, request_id, rater_id, rated_id, score, comment, created_at")
-    .single();
-
-  if (error?.code === "23505") {
-    return { ok: false as const, error: "You already rated this request." };
-  }
-
-  if (error && process.env.NODE_ENV === "development") {
-    try {
-      const admin = createAdminClient();
-      const adminResult = await admin
-        .from("ratings")
-        .insert(payload)
-        .select("id, request_id, rater_id, rated_id, score, comment, created_at")
-        .single();
-      data = adminResult.data;
-      error = adminResult.error;
-    } catch {
-      // fall through
-    }
-  }
-
-  if (error || !data) {
-    console.error("[Peek] submitRating:", error?.message);
-    return {
-      ok: false as const,
-      error: error?.message ?? "Could not save rating. Run migration 009 in Supabase."
-    };
-  }
-
-  revalidatePath(`/requests/${requestId}`);
-  revalidatePath("/my-requests");
-  revalidatePath("/profile");
-  revalidatePath("/requests");
-
-  return { ok: true as const, rating: data };
 }

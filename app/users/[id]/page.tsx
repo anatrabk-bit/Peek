@@ -1,10 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { RatingStat } from "@/components/profile/rating-stat";
-import { UserProfilePreview } from "@/components/user-profile-preview";
-import { UserReviewsList } from "@/components/user-reviews-list";
-import { getDisplayName } from "@/lib/auth-user";
-import { getPublicUserReviews } from "@/lib/supabase/ratings";
+import { UserAvatarIcon } from "@/components/user-avatar-icon";
 import {
   getPublicUserProfile,
   type PublicUserRole
@@ -16,7 +12,7 @@ type PublicUserPageProps = {
 };
 
 function parseRole(value: string | undefined): PublicUserRole {
-  return value === "peek" ? "peek" : "client";
+  return value === "client" ? "client" : "peek";
 }
 
 export default async function PublicUserPage({
@@ -24,81 +20,56 @@ export default async function PublicUserPage({
   searchParams
 }: PublicUserPageProps) {
   const role = parseRole(searchParams.as);
-  const [profile, reviews] = await Promise.all([
-    getPublicUserProfile(params.id, role),
-    getPublicUserReviews(params.id, role)
-  ]);
+  const profile = await getPublicUserProfile(params.id, role);
 
   if (!profile) {
     notFound();
   }
 
-  const displayName = getDisplayName(profile.display) ?? "Peek user";
-  const isClient = role === "client";
-  const metaLabel = isClient
-    ? `${profile.requestsPosted} request${profile.requestsPosted === 1 ? "" : "s"} posted`
-    : `${profile.jobsCompleted} job${profile.jobsCompleted === 1 ? "" : "s"} completed`;
+  const isPeek = role === "peek";
 
   return (
     <section className="page-container space-y-8">
       <div>
         <Link
-          href={isClient ? "/requests" : "/profile"}
+          href={isPeek ? "/requests" : "/my-requests"}
           className="text-sm font-semibold text-peek-primary hover:underline"
         >
-          ← {isClient ? "Back to jobs" : "Back"}
+          ← Back
         </Link>
         <h1 className="heading-section mt-4 text-3xl sm:text-4xl" dir="ltr">
-          {displayName}
+          {profile.display.nickname}
         </h1>
         <p className="mt-2 inline-flex rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-peek-muted">
-          {isClient ? "Client profile" : "Peek profile"}
+          {isPeek ? "Peek" : "Requester"}
         </p>
         <p className="mt-3 text-body">
-          {isClient
-            ? "Reviews from Peeks who completed jobs for this client."
-            : "Reviews from clients who received answers from this Peek."}
+          Anonymous profile — no real name is shown on Peek.
         </p>
       </div>
 
-      <UserProfilePreview
-        display={profile.display}
-        userId={profile.userId}
-        role={role}
-        summary={profile.rating}
-        metaLabel={metaLabel}
-        showProfileLink={false}
-      />
-
-      <div className="grid gap-5 sm:grid-cols-2">
-        <RatingStat
-          label={isClient ? "Client rating" : "Peek rating"}
-          summary={profile.rating}
-        />
-        <article className="card text-center sm:text-left">
-          <p className="text-sm font-medium text-peek-muted">
-            {isClient ? "Requests posted" : "Jobs completed"}
-          </p>
-          <p className="mt-2 text-3xl font-bold text-peek-text">
-            {isClient ? profile.requestsPosted : profile.jobsCompleted}
+      <article className="card-static flex items-center gap-4">
+        <UserAvatarIcon icon={profile.display.avatarIcon} size="lg" />
+        <div>
+          <p className="text-lg font-semibold text-peek-text" dir="ltr">
+            {profile.display.nickname}
           </p>
           <p className="mt-1 text-sm text-peek-muted">
-            {isClient ? "on Peek" : "as a Peek"}
+            {isPeek
+              ? `${profile.jobsCompleted} task${
+                  profile.jobsCompleted === 1 ? "" : "s"
+                } completed`
+              : `${profile.requestsPosted} request${
+                  profile.requestsPosted === 1 ? "" : "s"
+                } posted`}
           </p>
-        </article>
-      </div>
-
-      <div className="space-y-4">
-        <h2 className="heading-section text-xl">Reviews</h2>
-        <UserReviewsList
-          reviews={reviews}
-          emptyMessage={
-            isClient
-              ? "No reviews yet — this client hasn't been rated by a Peek."
-              : "No reviews yet — this Peek hasn't been rated by a client."
-          }
-        />
-      </div>
+          {isPeek && profile.display.peekStars > 0 && (
+            <p className="mt-1 text-sm font-semibold text-amber-600">
+              {profile.display.peekStars} ⭐ earned
+            </p>
+          )}
+        </div>
+      </article>
     </section>
   );
 }

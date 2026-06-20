@@ -1,23 +1,17 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
-import {
-  approvePeekForRequest,
-  declinePeekForRequest
-} from "@/app/requests/[id]/actions";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { markNotificationRead } from "@/app/notifications/actions";
 import { UserProfilePreview } from "@/components/user-profile-preview";
-import type { AuthUserSummary } from "@/lib/auth-user";
+import type { PublicPeekDisplay } from "@/lib/supabase/peek-profile";
 import type { UserNotification } from "@/types/notification";
-import type { UserRatingSummary } from "@/types/rating";
 
 type PendingPeekPayload = {
   requestId: string;
   requestTitle: string;
   runnerId: string;
-  peek: AuthUserSummary;
-  peekRating: UserRatingSummary;
+  peek: PublicPeekDisplay;
   jobsCompleted: number;
 };
 
@@ -30,11 +24,8 @@ export function PeekAppliedModal({
   notification,
   onClose
 }: PeekAppliedModalProps) {
-  const router = useRouter();
   const [payload, setPayload] = useState<PendingPeekPayload | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
 
   const open = !!notification?.request_id;
 
@@ -42,13 +33,12 @@ export function PeekAppliedModal({
     if (!open || !notification?.request_id) {
       setPayload(null);
       setLoadError(null);
-      setActionError(null);
       return;
     }
 
     let cancelled = false;
 
-    async function loadPendingPeek() {
+    async function loadPeek() {
       setLoadError(null);
       setPayload(null);
 
@@ -59,7 +49,7 @@ export function PeekAppliedModal({
 
         if (!response.ok) {
           if (!cancelled) {
-            setLoadError("This application is no longer waiting for approval.");
+            setLoadError("This task may already be handled.");
           }
           return;
         }
@@ -70,12 +60,12 @@ export function PeekAppliedModal({
         }
       } catch {
         if (!cancelled) {
-          setLoadError("Could not load the Peek profile. Try again from My requests.");
+          setLoadError("Could not load Peek profile.");
         }
       }
     }
 
-    void loadPendingPeek();
+    void loadPeek();
 
     if (notification && !notification.read_at) {
       void markNotificationRead(notification.id);
@@ -90,7 +80,7 @@ export function PeekAppliedModal({
     if (!open) return;
 
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !isPending) {
+      if (event.key === "Escape") {
         onClose();
       }
     }
@@ -103,37 +93,7 @@ export function PeekAppliedModal({
       document.body.style.overflow = previous;
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, isPending, onClose]);
-
-  function handleApprove() {
-    if (!payload) return;
-    setActionError(null);
-
-    startTransition(async () => {
-      const result = await approvePeekForRequest(payload.requestId);
-      if (!result.ok) {
-        setActionError(result.error ?? "Could not approve this Peek.");
-        return;
-      }
-      onClose();
-      router.refresh();
-    });
-  }
-
-  function handleDecline() {
-    if (!payload) return;
-    setActionError(null);
-
-    startTransition(async () => {
-      const result = await declinePeekForRequest(payload.requestId);
-      if (!result.ok) {
-        setActionError(result.error ?? "Could not decline this Peek.");
-        return;
-      }
-      onClose();
-      router.refresh();
-    });
-  }
+  }, [open, onClose]);
 
   if (!open || !notification) {
     return null;
@@ -142,31 +102,29 @@ export function PeekAppliedModal({
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-900/70 p-4 backdrop-blur-sm"
-      onClick={isPending ? undefined : onClose}
+      onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="peek-applied-title"
-        className="w-full max-w-lg rounded-3xl border border-violet-200 bg-white p-6 shadow-2xl sm:p-8"
+        className="w-full max-w-lg rounded-3xl border border-emerald-200 bg-white p-6 shadow-2xl sm:p-8"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="text-center">
           <span
-            className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-violet-100 text-2xl"
+            className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-2xl"
             aria-hidden
           >
-            👋
+            ✓
           </span>
           <h2
             id="peek-applied-title"
             className="mt-4 text-2xl font-bold text-peek-text"
           >
-            A Peek wants your job
+            A Peek is on it
           </h2>
-          <p className="mt-2 text-sm text-peek-muted">
-            {notification.body}
-          </p>
+          <p className="mt-2 text-sm text-peek-muted">{notification.body}</p>
         </div>
 
         <div className="mt-6">
@@ -175,59 +133,30 @@ export function PeekAppliedModal({
               {loadError}
             </p>
           ) : payload ? (
-            <UserProfilePreview
-              display={payload.peek}
-              userId={payload.runnerId}
-              role="peek"
-              summary={payload.peekRating}
-              metaLabel={
-                payload.jobsCompleted > 0
-                  ? `${payload.jobsCompleted} job${payload.jobsCompleted === 1 ? "" : "s"} completed`
-                  : null
-              }
-              showProfileLink
-            />
+            <UserProfilePreview display={payload.peek} />
           ) : (
             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-peek-muted">
-              Loading Peek profile…
+              Loading…
             </div>
           )}
         </div>
 
         {payload && (
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={handleApprove}
-              disabled={isPending}
-              className="btn-primary flex-1 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isPending ? "Approving…" : "Approve Peek"}
-            </button>
-            <button
-              type="button"
-              onClick={handleDecline}
-              disabled={isPending}
-              className="btn-secondary flex-1 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isPending ? "Declining…" : "Decline"}
-            </button>
-          </div>
-        )}
-
-        {actionError && (
-          <p className="mt-4 text-center text-sm text-red-600" role="alert">
-            {actionError}
-          </p>
+          <Link
+            href={`/requests/${payload.requestId}`}
+            onClick={onClose}
+            className="btn-primary mt-6 inline-flex w-full justify-center"
+          >
+            View request
+          </Link>
         )}
 
         <button
           type="button"
           onClick={onClose}
-          disabled={isPending}
-          className="mt-4 w-full text-center text-sm font-medium text-peek-muted hover:text-peek-text disabled:opacity-60"
+          className="mt-4 w-full text-center text-sm font-medium text-peek-muted hover:text-peek-text"
         >
-          Review later
+          Close
         </button>
       </div>
     </div>

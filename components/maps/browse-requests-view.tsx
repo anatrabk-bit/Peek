@@ -17,16 +17,12 @@ const RequestsMap = dynamic(
   }
 );
 import { getDistanceKm, hasValidCoordinates, type Coordinates } from "@/lib/geo";
-import { UserProfilePreview } from "@/components/user-profile-preview";
-import type { AuthUserSummary } from "@/lib/auth-user";
+import { REQUEST_STATUS_LABELS } from "@/lib/request-status-labels";
 import type { MarketplaceRequest } from "@/types/request";
-import type { UserRatingSummary } from "@/types/rating";
 
 type BrowseRequestsViewProps = {
   requests: MarketplaceRequest[];
   fetchError?: string | null;
-  requesterRatings?: Record<string, UserRatingSummary>;
-  requesterDisplays?: Record<string, AuthUserSummary>;
   fetchMeta?: {
     queryUsed: string;
     fetchedAt: string;
@@ -36,8 +32,6 @@ type BrowseRequestsViewProps = {
 export function BrowseRequestsView({
   requests,
   fetchError = null,
-  requesterRatings = {},
-  requesterDisplays = {},
   fetchMeta
 }: BrowseRequestsViewProps) {
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
@@ -108,8 +102,8 @@ export function BrowseRequestsView({
           <div>
             <h2 className="text-lg font-semibold text-peek-text">Map view</h2>
             <p className="mt-1 text-sm text-peek-muted">
-              All open requests on the map. Tap a pin to apply — the client
-              approves you before you start.
+              All open requests on the map. Tap a pin and hit &quot;I&apos;m on
+              it&quot; — first Peek nearby wins.
             </p>
           </div>
 
@@ -139,20 +133,6 @@ export function BrowseRequestsView({
                   {request.title}
                 </h3>
                 <p className="mt-1 text-body">{request.location}</p>
-                {request.user_id && requesterDisplays[request.user_id] && (
-                  <div className="mt-3">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-peek-muted">
-                      Posted by
-                    </p>
-                    <UserProfilePreview
-                      display={requesterDisplays[request.user_id]}
-                      userId={request.user_id}
-                      role="client"
-                      summary={requesterRatings[request.user_id] ?? null}
-                      size="sm"
-                    />
-                  </div>
-                )}
                 {userLocation &&
                   hasValidCoordinates(request.latitude, request.longitude) && (
                     <p className="mt-1 text-xs text-peek-muted">
@@ -167,14 +147,14 @@ export function BrowseRequestsView({
               <span className="badge-open">open</span>
             </div>
             <div className="mt-5 flex items-center justify-between border-t border-zinc-100 pt-4">
-              <p className="text-xl font-bold text-peek-accent">
-                £{request.budget}
+              <p className="text-sm font-semibold text-peek-primary">
+                {REQUEST_STATUS_LABELS[request.status]}
               </p>
               <Link
                 href={`/requests/${request.id}`}
                 className="btn-secondary px-5 py-2 text-sm"
               >
-                Take a look
+                I&apos;m on it →
               </Link>
             </div>
           </article>

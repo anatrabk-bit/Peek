@@ -6,24 +6,8 @@ import {
   type PlaceSelection
 } from "@/components/maps/places-autocomplete";
 import { createRequest } from "@/app/post-request/actions";
-import { MIN_BUDGET_GBP, MIN_BUDGET_MESSAGE } from "@/lib/constants";
-import {
-  freeBudgetHint,
-  freeSubmitButtonLabel,
-  paidSubmitButtonLabel,
-  type FreePostingInfo
-} from "@/lib/free-requests";
 
-type PostRequestFormProps = {
-  freePostingInfo: FreePostingInfo;
-};
-
-export function PostRequestForm({ freePostingInfo }: PostRequestFormProps) {
-  const stripeEnabled = Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-  const paypalEnabled = Boolean(process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID);
-  const cardCheckoutEnabled =
-    !freePostingInfo.nextPostIsFree && (stripeEnabled || paypalEnabled);
-  const nextPostIsFree = freePostingInfo.nextPostIsFree;
+export function PostRequestForm() {
   const [place, setPlace] = useState<PlaceSelection | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -38,7 +22,6 @@ export function PostRequestForm({ freePostingInfo }: PostRequestFormProps) {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
-    const budget = Number(formData.get("budget"));
 
     const locationFromForm = String(formData.get("location") ?? "").trim();
     const latitude = Number(formData.get("latitude"));
@@ -57,11 +40,6 @@ export function PostRequestForm({ freePostingInfo }: PostRequestFormProps) {
       return;
     }
 
-    if (Number.isNaN(budget) || budget < MIN_BUDGET_GBP) {
-      setError(MIN_BUDGET_MESSAGE);
-      return;
-    }
-
     formData.set("location", selectedPlace.location);
     formData.set("latitude", String(selectedPlace.latitude));
     formData.set("longitude", String(selectedPlace.longitude));
@@ -73,71 +51,20 @@ export function PostRequestForm({ freePostingInfo }: PostRequestFormProps) {
         return;
       }
 
-      if (result?.needsManualPayment && result.requestId) {
-        window.location.href = "/my-requests?payment_pending=1";
-        return;
-      }
-
-      if (result?.needsPayPalCheckout && result.requestId) {
-        try {
-          const response = await fetch("/api/paypal/checkout", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "same-origin",
-            body: JSON.stringify({ requestId: result.requestId })
-          });
-          const data = await response.json();
-
-          if (!response.ok || !data.url) {
-            setError(
-              data.error ??
-                "Request saved — go to My requests to complete payment."
-            );
-            return;
-          }
-
-          window.location.href = data.url;
-          return;
-        } catch {
-          setError("Request saved — go to My requests to complete payment.");
-          return;
-        }
-      }
-
-      if (result?.needsStripeCheckout && result.requestId) {
-        try {
-          const response = await fetch("/api/stripe/checkout", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "same-origin",
-            body: JSON.stringify({ requestId: result.requestId })
-          });
-          const data = await response.json();
-
-          if (!response.ok || !data.url) {
-            setError(
-              data.error ??
-                "Request saved — go to My requests to complete payment."
-            );
-            return;
-          }
-
-          window.location.href = data.url;
-          return;
-        } catch {
-          setError("Request saved — go to My requests to complete payment.");
-          return;
-        }
-      }
-
-      window.location.href = result.isFreePromo
-        ? "/my-requests?free_promo=1"
-        : "/my-requests";
+      window.location.href = "/my-requests?posted=1";
     });
   }
 
   return (
     <form onSubmit={handleSubmit} className="card-static space-y-5">
+      <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
+        <p className="font-semibold">Free to post</p>
+        <p className="mt-1 leading-relaxed">
+          Peeks help because they&apos;re already nearby — they earn stars, not
+          cash per task.
+        </p>
+      </div>
+
       <div className="space-y-2">
         <label htmlFor="title" className="text-sm font-semibold text-peek-text">
           What&apos;s the task?
@@ -148,7 +75,7 @@ export function PostRequestForm({ freePostingInfo }: PostRequestFormProps) {
           type="text"
           required
           disabled={isPending}
-          placeholder="e.g., Is the apartment lobby wheelchair accessible?"
+          placeholder="e.g., Is the café open? Is this item in stock?"
           className="input-field"
         />
       </div>
@@ -169,38 +96,9 @@ export function PostRequestForm({ freePostingInfo }: PostRequestFormProps) {
             <input type="hidden" name="location" value={place.location} />
             <input type="hidden" name="latitude" value={place.latitude} />
             <input type="hidden" name="longitude" value={place.longitude} />
-            <p className="text-sm text-peek-muted">
-              Pinned: {place.location}
-            </p>
+            <p className="text-sm text-peek-muted">Pinned: {place.location}</p>
           </>
         )}
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="budget" className="text-sm font-semibold text-peek-text">
-          What&apos;s it worth to you? (£)
-        </label>
-        <input
-          id="budget"
-          name="budget"
-          type="number"
-          min={MIN_BUDGET_GBP}
-          step={1}
-          required
-          disabled={isPending}
-          placeholder="e.g., 10"
-          className="input-field"
-        />
-        <p className="text-sm text-peek-muted">
-          Suggested: £5-£20 for a quick check.
-          {nextPostIsFree
-            ? freeBudgetHint()
-            : stripeEnabled
-              ? " You'll secure payment when you post — charged only when your Peek delivers the answer."
-              : paypalEnabled
-                ? " You'll pay by card or Apple Pay when you post — charged only when your Peek delivers the answer."
-                : " After posting you'll see payment details on My requests — your request goes live once payment is confirmed."}
-        </p>
       </div>
 
       {error && (
@@ -212,17 +110,9 @@ export function PostRequestForm({ freePostingInfo }: PostRequestFormProps) {
       <button
         type="submit"
         disabled={isPending}
-        className={`w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-60 ${
-          nextPostIsFree
-            ? "inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-3 font-semibold text-white shadow-sm transition duration-200 hover:bg-emerald-600 hover:shadow-md active:scale-[0.98]"
-            : "btn-primary"
-        }`}
+        className="btn-primary w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isPending
-          ? "Posting…"
-          : nextPostIsFree
-            ? freeSubmitButtonLabel(freePostingInfo)
-            : paidSubmitButtonLabel(cardCheckoutEnabled)}
+        {isPending ? "Posting…" : "Post request"}
       </button>
     </form>
   );

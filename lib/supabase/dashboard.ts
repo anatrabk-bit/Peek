@@ -6,7 +6,6 @@ export type DashboardSummary = {
   myActiveRequests: number;
   myCompletedRequests: number;
   jobsCompletedAsPeek: number;
-  needsRatingCount: number;
   recentRequests: MarketplaceRequest[];
 };
 
@@ -15,12 +14,7 @@ export async function getDashboardSummary(
 ): Promise<DashboardSummary> {
   const supabase = createClient();
 
-  const [
-    openJobsResult,
-    myRequestsResult,
-    peekJobsResult,
-    ratingsResult
-  ] = await Promise.all([
+  const [openJobsResult, myRequestsResult, peekJobsResult] = await Promise.all([
     supabase
       .from("requests")
       .select("id", { count: "exact", head: true })
@@ -37,24 +31,10 @@ export async function getDashboardSummary(
       .from("requests")
       .select("id", { count: "exact", head: true })
       .eq("runner_id", userId)
-      .eq("status", "completed"),
-    supabase
-      .from("ratings")
-      .select("request_id")
-      .eq("rater_id", userId)
+      .eq("status", "completed")
   ]);
 
   const myRequests = (myRequestsResult.data ?? []) as MarketplaceRequest[];
-  const ratedRequestIds = new Set(
-    ratingsResult.error ? [] : (ratingsResult.data ?? []).map((row) => row.request_id)
-  );
-
-  const needsRatingCount = myRequests.filter(
-    (request) =>
-      request.status === "completed" && !ratedRequestIds.has(request.id)
-  ).length;
-
-  const myActiveRequests = myRequests.filter((request) =>
     isRequestActive(request.status)
   ).length;
   const myCompletedRequests = myRequests.filter(
@@ -66,7 +46,6 @@ export async function getDashboardSummary(
     myActiveRequests,
     myCompletedRequests,
     jobsCompletedAsPeek: peekJobsResult.count ?? 0,
-    needsRatingCount,
     recentRequests: myRequests.slice(0, 3)
   };
 }

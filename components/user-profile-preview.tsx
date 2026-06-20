@@ -1,33 +1,20 @@
 import Link from "next/link";
-import { getDisplayName, type AuthUserSummary } from "@/lib/auth-user";
-import { StarRating } from "@/components/star-rating";
-import { UserInitialsAvatar } from "@/components/user-initials-avatar";
-import type { UserRatingSummary } from "@/types/rating";
+import { UserAvatarIcon } from "@/components/user-avatar-icon";
+import type { PublicPeekDisplay } from "@/lib/supabase/peek-profile";
 
 type UserProfilePreviewProps = {
-  display: AuthUserSummary;
-  userId: string;
-  role: "peek" | "client";
-  summary?: UserRatingSummary | null;
-  metaLabel?: string | null;
+  display: PublicPeekDisplay;
   size?: "sm" | "md";
   showProfileLink?: boolean;
 };
 
 export function UserProfilePreview({
   display,
-  userId,
-  role,
-  summary = null,
-  metaLabel = null,
   size = "md",
   showProfileLink = true
 }: UserProfilePreviewProps) {
-  const displayName = getDisplayName(display) ?? (role === "peek" ? "Peek" : "Client");
   const avatarSize = size === "sm" ? "sm" : "md";
-  const hasRating =
-    summary && summary.ratingCount > 0 && summary.averageScore != null;
-  const profileHref = `/users/${userId}?as=${role}`;
+  const profileHref = `/users/${display.userId}?as=peek`;
 
   const content = (
     <div
@@ -35,7 +22,7 @@ export function UserProfilePreview({
         showProfileLink ? "transition hover:border-sky-200 hover:bg-sky-50/40" : ""
       }`}
     >
-      <UserInitialsAvatar initials={display.initials} size={avatarSize} />
+      <UserAvatarIcon icon={display.avatarIcon} size={avatarSize} />
       <div className="min-w-0 flex-1">
         <p
           className={`truncate font-semibold text-peek-text ${
@@ -43,31 +30,15 @@ export function UserProfilePreview({
           }`}
           dir="ltr"
         >
-          {displayName}
+          {display.nickname}
         </p>
-        {hasRating ? (
-          <div className="mt-1 flex flex-wrap items-center gap-2">
-            <span
-              className={`font-semibold text-peek-text ${
-                size === "sm" ? "text-sm" : "text-base"
-              }`}
-            >
-              {summary!.averageScore!.toFixed(1)}
-            </span>
-            <StarRating score={Math.round(summary!.averageScore!)} size="sm" />
-            <span className="text-xs text-peek-muted">
-              ({summary!.ratingCount} review
-              {summary!.ratingCount === 1 ? "" : "s"})
-            </span>
-          </div>
-        ) : (
-          <p className="mt-1 text-xs text-peek-muted">
-            {role === "peek" ? "New Peek — no reviews yet" : "New client — no reviews yet"}
-          </p>
-        )}
-        {metaLabel && (
-          <p className="mt-1 text-xs text-peek-muted">{metaLabel}</p>
-        )}
+        <p className="mt-1 text-xs text-peek-muted">
+          {display.jobsCompleted === 0
+            ? "New Peek — no tasks yet"
+            : `${display.jobsCompleted} task${
+                display.jobsCompleted === 1 ? "" : "s"
+              } completed`}
+        </p>
         {showProfileLink && (
           <p className="mt-1 text-xs font-semibold text-peek-primary">
             View profile →

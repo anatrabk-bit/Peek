@@ -1,83 +1,57 @@
-import { getUserSummary, type AuthUserSummary } from "@/lib/auth-user";
-import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  getPeekRatingSummary,
-  getRequesterRatingSummary
-} from "@/lib/supabase/ratings";
-import { createClient } from "@/lib/supabase/server";
-import type { UserRatingSummary } from "@/types/rating";
+import { getPublicPeekDisplay } from "@/lib/supabase/peek-profile";
+import type { PublicPeekDisplay } from "@/lib/supabase/peek-profile";
 
 export type PublicUserRole = "client" | "peek";
 
 export type PublicUserProfile = {
   userId: string;
-  display: AuthUserSummary;
+  display: PublicPeekDisplay;
   role: PublicUserRole;
-  rating: UserRatingSummary;
   jobsCompleted: number;
   requestsPosted: number;
 };
-
-export async function getPublicUserDisplay(
-  userId: string
-): Promise<AuthUserSummary | null> {
-  try {
-    const admin = createAdminClient();
-    const { data, error } = await admin.auth.admin.getUserById(userId);
-    if (error || !data.user) {
-      return null;
-    }
-    return getUserSummary(data.user);
-  } catch {
-    return null;
-  }
-}
 
 export async function getPublicUserProfile(
   userId: string,
   role: PublicUserRole
 ): Promise<PublicUserProfile | null> {
-  const supabase = createClient();
-  const display = await getPublicUserDisplay(userId);
+  const display = await getPublicPeekDisplay(userId);
 
   if (!display) {
     return null;
   }
 
-  const [rating, jobsResult, requestsResult] = await Promise.all([
+  const requestsPosted =
     role === "client"
-      ? getRequesterRatingSummary(userId)
-      : getPeekRatingSummary(userId),
-    supabase
-      .from("requests")
-      .select("id", { count: "exact", head: true })
-      .eq("runner_id", userId)
-      .eq("status", "completed"),
-    supabase
-      .from("requests")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId)
-  ]);
+      ? await (async () => {
+          const { createClient } = await import("@/lib/supabase/server");
+          const supabase = createClient();
+          const { count } = await supabase
+            .from("requests")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", userId);
+          return count ?? 0;
+        })()
+      : 0;
 
   return {
     userId,
     display,
     role,
-    rating,
-    jobsCompleted: jobsResult.count ?? 0,
-    requestsPosted: requestsResult.count ?? 0
+    jobsCompleted: role === "peek" ? display.jobsCompleted : 0,
+    requestsPosted
   };
 }
 
-export async function getPublicUserDisplays(
+export async function getPublicPeekDisplays(
   userIds: string[]
-): Promise<Record<string, AuthUserSummary>> {
+): Promise<Record<string, PublicPeekDisplay>> {
   const uniqueIds = [...new Set(userIds.filter(Boolean))];
-  const result: Record<string, AuthUserSummary> = {};
+  const result: Record<string, PublicPeekDisplay> = {};
 
   await Promise.all(
     uniqueIds.map(async (userId) => {
-      const display = await getPublicUserDisplay(userId);
+      const display = await getPublicPeekDisplay(userId);
       if (display) {
         result[userId] = display;
       }

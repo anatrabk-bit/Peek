@@ -17,7 +17,7 @@ const steps = [
     emoji: "✅",
     title: "Get your answer fast",
     description:
-      "Real confirmation, photos if needed, and payment only when the job is done."
+      "Real confirmation and photos if needed — Peeks earn stars, not cash."
   }
 ];
 
@@ -106,7 +106,7 @@ export function LandingPage() {
               Post a request
             </Link>
             <Link href="/requests" className="btn-secondary btn-fun">
-              Earn as a Peek
+              Help as a Peek
             </Link>
           </div>
         </div>

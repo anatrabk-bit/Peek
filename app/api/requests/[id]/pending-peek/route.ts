@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { getPublicUserDisplay } from "@/lib/supabase/public-user";
-import { getPeekRatingSummary } from "@/lib/supabase/ratings";
+import { getPublicPeekDisplay } from "@/lib/supabase/peek-profile";
 import { createClient } from "@/lib/supabase/server";
 
 type RouteContext = {
   params: { id: string };
 };
 
+/** Legacy approval flow — kept for old notifications. */
 export async function GET(_request: Request, { params }: RouteContext) {
   const supabase = createClient();
   const {
@@ -27,20 +27,15 @@ export async function GET(_request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  if (requestRow.status !== "pending_approval" || !requestRow.runner_id) {
-    return NextResponse.json({ error: "No pending peek" }, { status: 404 });
+  if (
+    !requestRow.runner_id ||
+    (requestRow.status !== "claimed" &&
+      requestRow.status !== "pending_approval")
+  ) {
+    return NextResponse.json({ error: "No peek assigned" }, { status: 404 });
   }
 
-  const runnerId = requestRow.runner_id;
-  const [peek, peekRating, jobsResult] = await Promise.all([
-    getPublicUserDisplay(runnerId),
-    getPeekRatingSummary(runnerId),
-    supabase
-      .from("requests")
-      .select("id", { count: "exact", head: true })
-      .eq("runner_id", runnerId)
-      .eq("status", "completed")
-  ]);
+  const peek = await getPublicPeekDisplay(requestRow.runner_id);
 
   if (!peek) {
     return NextResponse.json({ error: "Peek not found" }, { status: 404 });
@@ -49,9 +44,8 @@ export async function GET(_request: Request, { params }: RouteContext) {
   return NextResponse.json({
     requestId: params.id,
     requestTitle: requestRow.title,
-    runnerId,
+    runnerId: requestRow.runner_id,
     peek,
-    peekRating,
-    jobsCompleted: jobsResult.count ?? 0
+    jobsCompleted: peek.jobsCompleted
   });
 }

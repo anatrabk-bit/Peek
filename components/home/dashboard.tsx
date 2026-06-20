@@ -25,7 +25,7 @@ const actions = [
     href: "/requests",
     emoji: "🔍",
     title: "Find work",
-    description: "Pick up a job nearby and earn.",
+    description: "Grab a task nearby, earn stars.",
     cardClass: "border-sky-200 bg-sky-50/70 hover:bg-sky-50",
     iconBg: "bg-white/80 text-sky-800"
   },
@@ -41,7 +41,7 @@ const actions = [
     href: "/profile",
     emoji: "⭐",
     title: "Your profile",
-    description: "Ratings, earnings, settings.",
+    description: "Stars, nickname, settings.",
     cardClass: "border-stone-200 bg-stone-50 hover:bg-stone-100/80",
     iconBg: "bg-white/80 text-stone-700"
   }
@@ -62,21 +62,6 @@ export function HomeDashboard({ user, summary }: HomeDashboardProps) {
           help someone nearby as a Peek?
         </p>
       </section>
-
-      {summary.needsRatingCount > 0 && (
-        <Link
-          href="/my-requests"
-          className="block rounded-2xl border border-amber-200 bg-amber-50 p-5 transition hover:bg-amber-100/60"
-        >
-          <p className="font-semibold text-peek-text">
-            You have {summary.needsRatingCount} answer
-            {summary.needsRatingCount === 1 ? "" : "s"} to rate
-          </p>
-          <p className="mt-1 text-sm text-peek-muted">
-            Quick ratings help great Peeks get more work.
-          </p>
-        </Link>
-      )}
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {actions.map((action, index) => (
@@ -169,8 +154,8 @@ export function HomeDashboard({ user, summary }: HomeDashboardProps) {
                     </p>
                     <p className="text-sm text-peek-muted">{request.location}</p>
                   </div>
-                  <p className="text-lg font-semibold text-peek-text">
-                    £{request.budget}
+                  <p className="text-sm font-semibold text-peek-primary">
+                    {REQUEST_STATUS_LABELS[request.status]}
                   </p>
                 </Link>
               </li>
