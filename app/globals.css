@@ -9,12 +9,13 @@
 @layer base {
   body {
     @apply font-sans text-peek-text antialiased;
-    background-color: #fffbeb;
+    background-color: #fff9f5;
     background-image:
-      radial-gradient(circle at 12% 8%, rgb(254 249 195 / 0.55), transparent 42%),
-      radial-gradient(circle at 88% 4%, rgb(224 242 254 / 0.7), transparent 38%),
-      radial-gradient(circle at 50% 100%, rgb(254 215 170 / 0.25), transparent 45%),
-      linear-gradient(180deg, rgb(240 249 255 / 0.85) 0%, #fafaf9 40%, #fffbeb 100%);
+      radial-gradient(circle at 8% 12%, rgb(255 200 87 / 0.45), transparent 32%),
+      radial-gradient(circle at 92% 8%, rgb(255 107 157 / 0.28), transparent 30%),
+      radial-gradient(circle at 78% 88%, rgb(126 232 168 / 0.35), transparent 34%),
+      radial-gradient(circle at 15% 78%, rgb(196 181 253 / 0.3), transparent 32%),
+      linear-gradient(180deg, #fff9f5 0%, #fff4ec 50%, #fff9f5 100%);
     background-attachment: fixed;
   }
 
@@ -37,11 +38,11 @@
   }
 
   .heading-hero {
-    @apply text-3xl font-bold tracking-tight text-balance sm:text-4xl lg:text-5xl;
+    @apply text-3xl font-extrabold tracking-tight text-balance sm:text-4xl lg:text-5xl;
   }
 
   .heading-section {
-    @apply text-xl font-semibold text-peek-text sm:text-2xl;
+    @apply text-xl font-bold text-peek-text sm:text-2xl;
   }
 
   .peek-site-footer {
@@ -74,77 +75,120 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-gradient-to-r from-peek-accent to-orange-500 px-6 py-3 font-semibold text-white shadow-sm transition duration-200 hover:opacity-95 hover:shadow-md active:scale-[0.98];
+    @apply inline-flex items-center justify-center rounded-full bg-gradient-to-r from-peek-primary via-peek-coral to-peek-accent px-6 py-3 font-bold text-white shadow-bubbly-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-bubbly active:translate-y-0 active:shadow-none;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-full border-2 border-peek-primary bg-white/80 px-6 py-3 font-semibold text-peek-primary transition duration-200 hover:bg-sky-50 hover:shadow-sm active:scale-[0.98];
+    @apply inline-flex items-center justify-center rounded-full border-2 border-peek-primary/40 bg-white px-6 py-3 font-bold text-peek-primary-dark shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-peek-primary hover:bg-peek-peach/50 hover:shadow-md active:translate-y-0;
   }
 
   .btn-hero-outline {
-    @apply inline-flex items-center justify-center rounded-full border-2 border-white px-6 py-3 font-semibold text-white transition duration-200 hover:bg-white/10 active:scale-[0.98];
+    @apply inline-flex items-center justify-center rounded-full border-2 border-white/90 bg-white/15 px-6 py-3 font-bold text-white backdrop-blur-sm transition duration-200 hover:bg-white/25 active:scale-[0.98];
   }
 
   .btn-hero-outline:hover {
-    box-shadow: 0 0 40px -8px rgb(14 165 233 / 0.45);
+    box-shadow: 0 0 48px -6px rgb(255 255 255 / 0.45);
   }
 
   .btn-fun {
-    @apply transition-opacity duration-200 hover:opacity-95;
+    @apply transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98];
   }
 
   .card {
-    @apply rounded-2xl border border-white/80 bg-white/95 p-6 shadow-card backdrop-blur-sm transition duration-200 hover:shadow-card-hover;
+    @apply rounded-3xl border-2 border-white bg-white/90 p-6 shadow-card backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-card-hover;
   }
 
   .card-static {
-    @apply rounded-2xl border border-white/80 bg-white/95 p-6 shadow-card backdrop-blur-sm;
+    @apply rounded-3xl border-2 border-white bg-white/90 p-6 shadow-card backdrop-blur-sm;
+  }
+
+  .card-fun {
+    @apply transition duration-200 hover:-translate-y-0.5 hover:shadow-card-hover;
+  }
+
+  .card-pink {
+    @apply border-peek-primary/20 bg-gradient-to-br from-pink-50 via-white to-peek-peach/40;
+  }
+
+  .card-mint {
+    @apply border-peek-mint/40 bg-gradient-to-br from-emerald-50 via-white to-teal-50/50;
+  }
+
+  .card-sunny {
+    @apply border-peek-sunny/50 bg-gradient-to-br from-amber-50 via-white to-orange-50/60;
+  }
+
+  .card-lavender {
+    @apply border-peek-lavender/40 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50/40;
+  }
+
+  .peek-chip {
+    @apply rounded-full border-2 border-white bg-white/90 px-3 py-1.5 text-sm font-bold text-peek-text shadow-sm;
+  }
+
+  .peek-welcome-banner {
+    @apply overflow-hidden rounded-[2rem] border-2 border-white bg-gradient-to-br from-pink-100 via-peek-peach to-amber-100 p-8 shadow-card sm:p-10;
   }
 
   .peek-auth-page {
     background-image:
-      radial-gradient(circle at 50% 0%, rgb(254 240 138 / 0.35), transparent 50%),
-      radial-gradient(circle at 100% 80%, rgb(186 230 253 / 0.4), transparent 45%);
+      radial-gradient(circle at 20% 10%, rgb(255 200 87 / 0.5), transparent 40%),
+      radial-gradient(circle at 80% 20%, rgb(255 107 157 / 0.35), transparent 38%),
+      radial-gradient(circle at 50% 90%, rgb(196 181 253 / 0.35), transparent 42%);
   }
 
   .peek-auth-card {
-    @apply border-sky-100 bg-white/95 shadow-card;
-  }
-
-  .card-fun {
-    @apply transition duration-200 hover:shadow-card-hover;
+    @apply border-2 border-white bg-white/95 shadow-card;
   }
 
   .peek-hero {
-    @apply bg-gradient-to-br from-sky-500 via-peek-primary to-violet-600;
+    background: linear-gradient(
+      135deg,
+      #ff6b9d 0%,
+      #ff8c69 28%,
+      #ffc857 58%,
+      #c4b5fd 100%
+    );
+  }
+
+  .peek-logo {
+    @apply bg-gradient-to-r from-peek-primary via-peek-coral to-peek-sunny bg-clip-text font-extrabold text-transparent;
   }
 
   .peek-blob {
-    @apply pointer-events-none absolute rounded-full bg-white/10 blur-3xl;
+    @apply pointer-events-none absolute rounded-full blur-3xl;
   }
 
   .peek-blob-a {
     left: -4rem;
     top: 2rem;
-    height: 14rem;
-    width: 14rem;
+    height: 16rem;
+    width: 16rem;
+    background: rgb(255 255 255 / 0.22);
     animation: float 8s ease-in-out infinite;
   }
 
   .peek-blob-b {
     right: -3rem;
-    top: 40%;
-    height: 11rem;
-    width: 11rem;
+    top: 35%;
+    height: 12rem;
+    width: 12rem;
+    background: rgb(255 255 255 / 0.18);
     animation: float 11s ease-in-out infinite reverse;
   }
 
   .peek-blob-c {
     bottom: -2rem;
-    left: 35%;
-    height: 9rem;
-    width: 9rem;
+    left: 30%;
+    height: 10rem;
+    width: 10rem;
+    background: rgb(255 255 255 / 0.15);
     animation: float 9s ease-in-out infinite;
+  }
+
+  .peek-float-emoji {
+    @apply pointer-events-none absolute select-none text-4xl opacity-90 sm:text-5xl;
+    animation: float 6s ease-in-out infinite;
   }
 
   .peek-fade-in {
@@ -158,29 +202,32 @@
   .peek-delay-5 { animation-delay: 0.4s; }
 
   .nav-link {
-    @apply relative transition-colors duration-200 hover:text-peek-primary;
+    @apply relative font-semibold transition-colors duration-200 hover:text-peek-primary;
   }
 
   .nav-link::after {
     content: "";
-    @apply absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-peek-primary transition-all duration-200;
+    @apply absolute -bottom-1 left-0 h-1 w-0 rounded-full bg-gradient-to-r from-peek-primary to-peek-sunny transition-all duration-200;
   }
 
   .nav-link:hover::after {
     @apply w-full;
   }
 
-  /* Account menu chevron — rotates when <details> is open */
   details[open] .account-menu-chevron {
     transform: rotate(180deg);
   }
 
   .input-field {
-    @apply w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-peek-text placeholder:text-peek-muted focus:border-peek-primary focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:bg-peek-card;
+    @apply w-full rounded-2xl border-2 border-peek-peach bg-white px-4 py-3 font-medium text-peek-text placeholder:text-peek-muted/80 focus:border-peek-primary focus:outline-none focus:ring-4 focus:ring-pink-100 disabled:bg-peek-cream;
   }
 
   .badge-open {
-    @apply rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-700;
+    @apply rounded-full bg-peek-mint/30 px-3 py-1 text-xs font-bold uppercase tracking-wide text-emerald-800;
+  }
+
+  .peek-mobile-nav {
+    @apply border-t-2 border-peek-peach/60 bg-peek-cream/95 backdrop-blur-md;
   }
 
   .peek-slide-up {
@@ -217,15 +264,14 @@
 @keyframes peek-pulse-ring {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.35);
+    box-shadow: 0 0 0 0 rgba(255 200 87, 0.45);
   }
   50% {
-    box-shadow: 0 0 0 10px rgba(251, 191, 36, 0);
+    box-shadow: 0 0 0 10px rgba(255 200 87, 0);
   }
 }
 
 @layer components {
-  /* Google Places autocomplete dropdown + new PlaceAutocompleteElement */
   .pac-container {
     z-index: 10000 !important;
   }
@@ -243,7 +289,6 @@
     box-shadow: none !important;
   }
 
-  /* שדה הקלדה הפנימי של Google — כמו input-field */
   gmp-place-autocomplete::part(input) {
     font-family: inherit;
     font-size: 1rem;
@@ -253,11 +298,11 @@
     border: none;
     outline: none;
     background: transparent;
-    color: #18181b;
+    color: #4a3728;
     color-scheme: light;
   }
 
   gmp-place-autocomplete::part(input)::placeholder {
-    color: #71717a;
+    color: #9c8b7a;
   }
 }

@@ -8,17 +8,17 @@ type MobileBottomNavProps = {
 };
 
 const guestTabs = [
-  { href: "/", label: "Home" },
-  { href: "/requests", label: "Jobs" },
-  { href: "/login", label: "Join" }
+  { href: "/", label: "Home", emoji: "🏠" },
+  { href: "/requests", label: "Jobs", emoji: "🔍" },
+  { href: "/login", label: "Join", emoji: "✨" }
 ] as const;
 
 const userTabs = [
-  { href: "/", label: "Home" },
-  { href: "/requests", label: "Jobs" },
-  { href: "/post-request", label: "Post" },
-  { href: "/my-requests", label: "Mine" },
-  { href: "/profile", label: "Profile" }
+  { href: "/", label: "Home", emoji: "🏠" },
+  { href: "/requests", label: "Jobs", emoji: "🔍" },
+  { href: "/post-request", label: "Post", emoji: "📝" },
+  { href: "/my-requests", label: "Mine", emoji: "📋" },
+  { href: "/profile", label: "Profile", emoji: "⭐" }
 ] as const;
 
 function isActive(pathname: string, href: string) {
@@ -33,10 +33,7 @@ export function MobileBottomNav({ signedIn }: MobileBottomNavProps) {
   const tabs = signedIn ? userTabs : guestTabs;
 
   return (
-    <nav
-      className="peek-mobile-nav fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-white/95 backdrop-blur-md sm:hidden"
-      aria-label="Main"
-    >
+    <nav className="peek-mobile-nav fixed inset-x-0 bottom-0 z-50 sm:hidden" aria-label="Main">
       <div className="mx-auto flex max-w-lg items-stretch justify-around px-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1">
         {tabs.map((tab) => {
           const active = isActive(pathname, tab.href);
@@ -44,19 +41,16 @@ export function MobileBottomNav({ signedIn }: MobileBottomNavProps) {
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex min-h-11 min-w-0 flex-1 flex-col items-center justify-center rounded-xl px-1 py-2 text-center text-[11px] font-semibold transition ${
+              className={`flex min-h-11 min-w-0 flex-1 flex-col items-center justify-center rounded-2xl px-1 py-1.5 text-center text-[10px] font-extrabold transition ${
                 active
-                  ? "text-peek-primary"
+                  ? "bg-gradient-to-t from-pink-100 to-peek-peach/60 text-peek-primary"
                   : "text-peek-muted hover:text-peek-text"
               }`}
             >
-              <span
-                className={`mb-1 h-1 w-8 rounded-full ${
-                  active ? "bg-peek-primary" : "bg-transparent"
-                }`}
-                aria-hidden
-              />
-              {tab.label}
+              <span className="text-base leading-none" aria-hidden>
+                {tab.emoji}
+              </span>
+              <span className="mt-0.5">{tab.label}</span>
             </Link>
           );
         })}

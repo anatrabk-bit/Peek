@@ -9,7 +9,7 @@ import { InstallAppPrompt } from "@/components/install-app-prompt";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { PwaRegister } from "@/components/pwa-register";
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Nunito } from "next/font/google";
 import Link from "next/link";
 import { AppProviders } from "@/components/app-providers";
 import { Footer } from "@/components/footer";
@@ -22,10 +22,11 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import "./globals.css";
 
-const inter = Inter({
+const nunito = Nunito({
   subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap"
+  variable: "--font-nunito",
+  display: "swap",
+  weight: ["400", "600", "700", "800"]
 });
 
 export const metadata: Metadata = {
@@ -52,7 +53,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0ea5e9",
+  themeColor: "#FF6B9D",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover"
@@ -80,13 +81,13 @@ export default async function RootLayout({
   const notificationShell = (
     <>
       <AuthCodeHandler />
-      <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-md supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)]">
+      <header className="sticky top-0 z-50 border-b-2 border-peek-peach/50 bg-peek-cream/90 backdrop-blur-md supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)]">
         <nav className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 py-3 sm:gap-3 sm:px-6 sm:py-4">
           <Link
             href="/"
-            className="shrink-0 text-lg font-bold text-peek-primary transition hover:opacity-80 sm:text-xl"
+            className="peek-logo shrink-0 text-lg sm:text-xl transition hover:opacity-90"
           >
-            Peek
+            Peek ✨
           </Link>
 
           <div className="flex min-w-0 items-center gap-2 sm:gap-4">
@@ -131,7 +132,7 @@ export default async function RootLayout({
   );
 
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={nunito.variable}>
       <body className="flex min-h-screen flex-col font-sans">
         <PwaRegister />
         {user ? (
