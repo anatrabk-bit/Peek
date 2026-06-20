@@ -4,8 +4,8 @@ import {
   suggestDefaultAvatarIcon
 } from "@/lib/avatar-icons";
 import {
-  isLegacyAutoNickname,
   normalizeNickname,
+  shouldResetNickname,
   suggestDefaultNickname,
   validateNickname
 } from "@/lib/nickname-suggestions";
@@ -37,10 +37,30 @@ function defaultNickname(userId: string): string {
 
 function resolveNickname(userId: string, stored: string | null): string {
   const trimmed = stored?.trim();
-  if (!trimmed || isLegacyAutoNickname(trimmed)) {
+  if (!trimmed || shouldResetNickname(trimmed)) {
     return defaultNickname(userId);
   }
   return trimmed;
+}
+
+async function fixStoredNicknameIfNeeded(
+  userId: string,
+  stored: string | null,
+  resolved: string
+): Promise<void> {
+  const trimmed = stored?.trim();
+  if (!trimmed || !shouldResetNickname(trimmed) || trimmed === resolved) {
+    return;
+  }
+
+  const supabase = createClient();
+  await supabase
+    .from("peek_profiles")
+    .update({
+      nickname: resolved,
+      updated_at: new Date().toISOString()
+    })
+    .eq("user_id", userId);
 }
 
 function mapProfile(row: {
@@ -99,7 +119,12 @@ export async function getPeekProfile(
     };
   }
 
-  return mapProfile(data);
+  const profile = mapProfile(data);
+  if (data.nickname && shouldResetNickname(data.nickname)) {
+    await fixStoredNicknameIfNeeded(userId, data.nickname, profile.nickname);
+  }
+
+  return profile;
 }
 
 export async function getOrCreatePeekProfile(
@@ -127,7 +152,7 @@ export async function getOrCreatePeekProfile(
   if (!data) {
     await supabase.from("peek_profiles").insert({
       user_id: userId,
-      nickname: null,
+      nickname: defaultNickname(userId),
       avatar_icon: suggestDefaultAvatarIcon(userId)
     });
   }

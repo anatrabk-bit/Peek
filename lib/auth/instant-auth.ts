@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { suggestDefaultAvatarIcon } from "@/lib/avatar-icons";
+import { suggestDefaultNickname } from "@/lib/nickname-suggestions";
 import {
   isDuplicateSignupError,
   normalizeSignupEmail,
@@ -80,7 +81,7 @@ export async function instantSignInOrUp(
   if (!existingProfile) {
     await admin.from("peek_profiles").insert({
       user_id: userId,
-      nickname: null,
+      nickname: suggestDefaultNickname(userId),
       avatar_icon: suggestDefaultAvatarIcon(userId)
     });
   }

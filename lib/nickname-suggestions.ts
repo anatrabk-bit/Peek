@@ -67,11 +67,38 @@ export function isLegacyAutoNickname(nickname: string): boolean {
   return OLD_AUTO_NICKNAME.test(nickname.trim());
 }
 
+/** Stored nicknames we should replace with a fun suggestion (hyphens, old auto names, etc.). */
+export function shouldResetNickname(nickname: string): boolean {
+  const trimmed = nickname.trim();
+  if (!trimmed) return true;
+  if (isLegacyAutoNickname(trimmed)) return true;
+  if (trimmed.includes("-")) return true;
+
+  const normalized = normalizeNickname(trimmed).toLowerCase();
+  const deprecated = new Set([
+    "the first peek",
+    "warm heart",
+    "little legend",
+    "sunshine helper",
+    "neighborhood angel",
+    "soft launch star",
+    "plot armor pal",
+    "good vibes only",
+    "street explorer"
+  ]);
+
+  return deprecated.has(normalized);
+}
+
 export function normalizeNickname(raw: string): string {
   return raw.trim().replace(/-/g, " ").replace(/\s+/g, " ");
 }
 
 export function validateNickname(raw: string): string | null {
+  if (raw.trim().includes("-")) {
+    return "Use spaces between words — no hyphens (e.g. Day Maker, not Day-Maker).";
+  }
+
   const nickname = normalizeNickname(raw);
 
   if (nickname.length < NICKNAME_MIN_LENGTH) {
@@ -80,10 +107,6 @@ export function validateNickname(raw: string): string | null {
 
   if (nickname.length > NICKNAME_MAX_LENGTH) {
     return `Nickname must be ${NICKNAME_MAX_LENGTH} characters or fewer.`;
-  }
-
-  if (nickname.includes("-")) {
-    return "Use spaces between words — no hyphens (e.g. Day Maker, not Day-Maker).";
   }
 
   if (!/^[a-zA-Z0-9][a-zA-Z0-9 ']*[a-zA-Z0-9]$/.test(nickname)) {
