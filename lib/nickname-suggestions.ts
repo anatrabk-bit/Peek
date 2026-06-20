@@ -1,24 +1,28 @@
 export const PEEK_NICKNAME_SUGGESTIONS = [
-  "Coffee Hero",
-  "Harry Potter Queen",
-  "Sunshine Helper",
-  "Neighborhood Angel",
-  "Main Character Energy",
-  "Good Vibes Only",
-  "Kindness Captain",
-  "Street Explorer",
-  "Magic Moment Maker",
-  "Warm Heart",
-  "Little Legend",
   "Day Maker",
   "Smile Spreader",
   "Cosmic Helper",
+  "Coffee Hero",
+  "Harry Potter Queen",
+  "Kindness Captain",
+  "Magic Moment Maker",
   "Bubble Tea Boss",
-  "Plot Twist Pro",
-  "Soft Launch Star",
   "Chaos Coordinator",
   "Golden Retriever Energy",
-  "Plot Armor Pal"
+  "Main Character Energy",
+  "Plot Twist Pro",
+  "Joy Bringer",
+  "Mood Lifter",
+  "Star Chaser",
+  "Spark Spreader",
+  "Task Wizard",
+  "Adventure Ally",
+  "Neighborhood Hero",
+  "Street Champion",
+  "Good Vibes Captain",
+  "Hope Dealer",
+  "Vibe Curator",
+  "Wonder Walker"
 ] as const;
 
 export const NICKNAME_MIN_LENGTH = 2;
@@ -64,7 +68,7 @@ export function isLegacyAutoNickname(nickname: string): boolean {
 }
 
 export function normalizeNickname(raw: string): string {
-  return raw.trim().replace(/\s+/g, " ");
+  return raw.trim().replace(/-/g, " ").replace(/\s+/g, " ");
 }
 
 export function validateNickname(raw: string): string | null {
@@ -78,8 +82,12 @@ export function validateNickname(raw: string): string | null {
     return `Nickname must be ${NICKNAME_MAX_LENGTH} characters or fewer.`;
   }
 
-  if (!/^[a-zA-Z0-9][a-zA-Z0-9 _'-]*[a-zA-Z0-9]$/.test(nickname)) {
-    return "Use letters, numbers, spaces, hyphens, or apostrophes — start and end with a letter or number.";
+  if (nickname.includes("-")) {
+    return "Use spaces between words — no hyphens (e.g. Day Maker, not Day-Maker).";
+  }
+
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9 ']*[a-zA-Z0-9]$/.test(nickname)) {
+    return "Use letters, numbers, and spaces — start and end with a letter or number.";
   }
 
   return null;

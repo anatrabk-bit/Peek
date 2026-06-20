@@ -46,7 +46,7 @@ export function SetPeekIdentityForm({
         <h3 className="heading-section text-lg">Your anonymous identity</h3>
         <p className="mt-2 text-sm text-peek-muted">
           Others only see your nickname and icon — never your real name or
-          email. Spaces are welcome (e.g. Coffee Hero).
+          email. Use spaces, not hyphens (e.g. Day Maker).
         </p>
       </div>
 
@@ -65,7 +65,7 @@ export function SetPeekIdentityForm({
           onChange={(event) => setNickname(event.target.value)}
           disabled={isPending}
           className="input-field"
-          placeholder="e.g., Coffee Hero"
+          placeholder="e.g. Smile Spreader"
         />
         <p className="text-xs text-peek-muted">Tap a suggestion or type your own.</p>
         <div className="flex flex-wrap gap-2 pt-1">
