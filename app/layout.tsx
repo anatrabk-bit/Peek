@@ -53,7 +53,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FF6B9D",
+  themeColor: "#0284C7",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover"
@@ -81,13 +81,13 @@ export default async function RootLayout({
   const notificationShell = (
     <>
       <AuthCodeHandler />
-      <header className="sticky top-0 z-50 border-b-2 border-peek-peach/50 bg-peek-cream/90 backdrop-blur-md supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)]">
+      <header className="sticky top-0 z-50 border-b border-peek-border bg-peek-surface/95 backdrop-blur-md supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)]">
         <nav className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 py-3 sm:gap-3 sm:px-6 sm:py-4">
           <Link
             href="/"
-            className="peek-logo shrink-0 text-lg sm:text-xl transition hover:opacity-90"
+            className="shrink-0 text-lg font-bold text-peek-primary sm:text-xl"
           >
-            Peek ✨
+            Peek
           </Link>
 
           <div className="flex min-w-0 items-center gap-2 sm:gap-4">

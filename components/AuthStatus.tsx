@@ -75,9 +75,9 @@ export default function AuthStatus({
     return (
       <Link
         href="/login"
-        className="rounded-full border-2 border-peek-primary/40 bg-gradient-to-r from-pink-50 to-amber-50 px-4 py-1.5 font-extrabold text-peek-primary shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+        className="rounded-full border border-peek-border bg-peek-surface px-4 py-1.5 text-sm font-semibold text-peek-primary transition hover:bg-sky-50"
       >
-        Join ✨
+        Join
       </Link>
     );
   }
@@ -88,7 +88,7 @@ export default function AuthStatus({
   return (
     <details ref={menuRef} className="relative shrink-0">
       <summary
-        className="flex cursor-pointer list-none items-center gap-1.5 rounded-full py-0.5 pl-0.5 pr-2 transition hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peek-primary focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
+        className="flex cursor-pointer list-none items-center gap-1.5 rounded-full py-0.5 pl-0.5 pr-2 transition hover:bg-stone-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
         aria-label={`Account menu for ${peekName}`}
       >
         <UserAvatarIcon icon={avatarIcon} size="sm" />
@@ -96,7 +96,7 @@ export default function AuthStatus({
       </summary>
 
       <div
-        className="absolute right-0 z-[60] mt-2 w-72 origin-top-right rounded-[1.25rem] border-2 border-white bg-peek-cream p-4 shadow-card"
+        className="absolute right-0 z-[60] mt-2 w-72 origin-top-right rounded-xl border border-peek-border bg-peek-surface p-4 shadow-card"
         role="menu"
         onPointerDown={(event) => event.stopPropagation()}
       >
@@ -107,7 +107,7 @@ export default function AuthStatus({
               {peekName}
             </p>
             <p className="mt-0.5 text-sm text-peek-muted">
-              Your Peek identity ✨
+              Your anonymous profile
             </p>
           </div>
         </div>

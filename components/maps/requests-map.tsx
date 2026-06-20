@@ -145,7 +145,7 @@ export function RequestsMap({ requests, userLocation }: RequestsMapProps) {
             <div className="max-w-[220px] space-y-2 p-1">
               <p className="font-semibold text-peek-text">{activeRequest.title}</p>
               <p className="text-sm font-semibold text-amber-600">
-                ⭐ Earn stars
+                Earn stars
               </p>
               <Link
                 href={`/requests/${activeRequest.id}`}

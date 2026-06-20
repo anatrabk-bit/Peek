@@ -159,7 +159,7 @@ export function LoginForm({ errorMessage, redirectTo }: LoginFormProps) {
         {status === "loading"
           ? "Sending magic link…"
           : status === "sent"
-            ? "Link sent ✨"
+            ? "Link sent"
             : "Send me a magic link"}
       </button>
 
@@ -178,10 +178,10 @@ export function LoginForm({ errorMessage, redirectTo }: LoginFormProps) {
         <p
           className={`rounded-xl px-4 py-3 text-sm leading-relaxed ${
             status === "error"
-              ? "bg-red-50 text-red-700"
+              ? "border border-red-200 bg-red-50 text-red-800"
               : status === "sent"
-                ? "bg-emerald-50 text-emerald-800"
-                : "bg-sky-50 text-sky-900"
+                ? "peek-callout-success"
+                : "peek-callout"
           }`}
           role="status"
         >

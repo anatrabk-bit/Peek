@@ -35,8 +35,7 @@ export default async function UserProfilePage() {
       <div>
         <h1 className="heading-section text-3xl sm:text-4xl">Your profile</h1>
         <p className="mt-3 text-body">
-          This is your happy corner — nickname, icon, and stars. Nobody sees your
-          real name or email.
+          Your nickname, icon, and stars. Nobody sees your real name or email.
         </p>
       </div>
 

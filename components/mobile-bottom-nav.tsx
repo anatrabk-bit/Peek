@@ -8,17 +8,17 @@ type MobileBottomNavProps = {
 };
 
 const guestTabs = [
-  { href: "/", label: "Home", emoji: "🏠" },
-  { href: "/requests", label: "Jobs", emoji: "🔍" },
-  { href: "/login", label: "Join", emoji: "✨" }
+  { href: "/", label: "Home" },
+  { href: "/requests", label: "Jobs" },
+  { href: "/login", label: "Join" }
 ] as const;
 
 const userTabs = [
-  { href: "/", label: "Home", emoji: "🏠" },
-  { href: "/requests", label: "Jobs", emoji: "🔍" },
-  { href: "/post-request", label: "Post", emoji: "📝" },
-  { href: "/my-requests", label: "Mine", emoji: "📋" },
-  { href: "/profile", label: "Profile", emoji: "⭐" }
+  { href: "/", label: "Home" },
+  { href: "/requests", label: "Jobs" },
+  { href: "/post-request", label: "Post" },
+  { href: "/my-requests", label: "Mine" },
+  { href: "/profile", label: "Profile" }
 ] as const;
 
 function isActive(pathname: string, href: string) {
@@ -41,16 +41,19 @@ export function MobileBottomNav({ signedIn }: MobileBottomNavProps) {
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex min-h-11 min-w-0 flex-1 flex-col items-center justify-center rounded-2xl px-1 py-1.5 text-center text-[10px] font-extrabold transition ${
+              className={`flex min-h-11 min-w-0 flex-1 flex-col items-center justify-center rounded-lg px-1 py-2 text-center text-[11px] font-semibold transition ${
                 active
-                  ? "bg-gradient-to-t from-pink-100 to-peek-peach/60 text-peek-primary"
+                  ? "text-peek-primary"
                   : "text-peek-muted hover:text-peek-text"
               }`}
             >
-              <span className="text-base leading-none" aria-hidden>
-                {tab.emoji}
-              </span>
-              <span className="mt-0.5">{tab.label}</span>
+              <span
+                className={`mb-1 h-0.5 w-6 rounded-full ${
+                  active ? "bg-peek-primary" : "bg-transparent"
+                }`}
+                aria-hidden
+              />
+              {tab.label}
             </Link>
           );
         })}

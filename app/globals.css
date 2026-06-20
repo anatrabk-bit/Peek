@@ -8,15 +8,7 @@
 
 @layer base {
   body {
-    @apply font-sans text-peek-text antialiased;
-    background-color: #fff9f5;
-    background-image:
-      radial-gradient(circle at 8% 12%, rgb(255 200 87 / 0.45), transparent 32%),
-      radial-gradient(circle at 92% 8%, rgb(255 107 157 / 0.28), transparent 30%),
-      radial-gradient(circle at 78% 88%, rgb(126 232 168 / 0.35), transparent 34%),
-      radial-gradient(circle at 15% 78%, rgb(196 181 253 / 0.3), transparent 32%),
-      linear-gradient(180deg, #fff9f5 0%, #fff4ec 50%, #fff9f5 100%);
-    background-attachment: fixed;
+    @apply bg-peek-warm font-sans text-peek-text antialiased;
   }
 
   @media (max-width: 639px) {
@@ -38,11 +30,11 @@
   }
 
   .heading-hero {
-    @apply text-3xl font-extrabold tracking-tight text-balance sm:text-4xl lg:text-5xl;
+    @apply text-3xl font-bold tracking-tight text-balance sm:text-4xl lg:text-5xl;
   }
 
   .heading-section {
-    @apply text-xl font-bold text-peek-text sm:text-2xl;
+    @apply text-xl font-semibold text-peek-text sm:text-2xl;
   }
 
   .peek-site-footer {
@@ -75,143 +67,111 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-gradient-to-r from-peek-primary via-peek-coral to-peek-accent px-6 py-3 font-bold text-white shadow-bubbly-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-bubbly active:translate-y-0 active:shadow-none;
+    @apply inline-flex items-center justify-center rounded-full bg-peek-accent px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-orange-600 active:scale-[0.99];
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-full border-2 border-peek-primary/40 bg-white px-6 py-3 font-bold text-peek-primary-dark shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-peek-primary hover:bg-peek-peach/50 hover:shadow-md active:translate-y-0;
+    @apply inline-flex items-center justify-center rounded-full border border-peek-border bg-peek-surface px-6 py-3 font-semibold text-peek-text shadow-sm transition hover:border-sky-300 hover:bg-sky-50 active:scale-[0.99];
   }
 
   .btn-hero-outline {
-    @apply inline-flex items-center justify-center rounded-full border-2 border-white/90 bg-white/15 px-6 py-3 font-bold text-white backdrop-blur-sm transition duration-200 hover:bg-white/25 active:scale-[0.98];
-  }
-
-  .btn-hero-outline:hover {
-    box-shadow: 0 0 48px -6px rgb(255 255 255 / 0.45);
+    @apply inline-flex items-center justify-center rounded-full border-2 border-white bg-white/10 px-6 py-3 font-semibold text-white transition hover:bg-white/20 active:scale-[0.99];
   }
 
   .btn-fun {
-    @apply transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98];
+    @apply transition duration-150;
   }
 
   .card {
-    @apply rounded-3xl border-2 border-white bg-white/90 p-6 shadow-card backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-card-hover;
+    @apply rounded-2xl border border-peek-border bg-peek-surface p-6 shadow-card transition hover:shadow-card-hover;
   }
 
   .card-static {
-    @apply rounded-3xl border-2 border-white bg-white/90 p-6 shadow-card backdrop-blur-sm;
+    @apply rounded-2xl border border-peek-border bg-peek-surface p-6 shadow-card;
   }
 
   .card-fun {
-    @apply transition duration-200 hover:-translate-y-0.5 hover:shadow-card-hover;
+    @apply transition hover:shadow-card-hover;
   }
 
-  .card-pink {
-    @apply border-peek-primary/20 bg-gradient-to-br from-pink-50 via-white to-peek-peach/40;
+  .peek-icon-badge {
+    @apply flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl;
   }
 
-  .card-mint {
-    @apply border-peek-mint/40 bg-gradient-to-br from-emerald-50 via-white to-teal-50/50;
+  .peek-icon-badge-sky {
+    @apply bg-sky-50;
   }
 
-  .card-sunny {
-    @apply border-peek-sunny/50 bg-gradient-to-br from-amber-50 via-white to-orange-50/60;
+  .peek-icon-badge-orange {
+    @apply bg-orange-50;
   }
 
-  .card-lavender {
-    @apply border-peek-lavender/40 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50/40;
+  .peek-icon-badge-emerald {
+    @apply bg-emerald-50;
+  }
+
+  .peek-icon-badge-amber {
+    @apply bg-amber-50;
   }
 
   .peek-chip {
-    @apply rounded-full border-2 border-white bg-white/90 px-3 py-1.5 text-sm font-bold text-peek-text shadow-sm;
+    @apply rounded-full bg-stone-100 px-3 py-1 text-sm font-medium text-peek-text;
+  }
+
+  .peek-callout {
+    @apply rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950;
+  }
+
+  .peek-callout-success {
+    @apply rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950;
   }
 
   .peek-welcome-banner {
-    @apply overflow-hidden rounded-[2rem] border-2 border-white bg-gradient-to-br from-pink-100 via-peek-peach to-amber-100 p-8 shadow-card sm:p-10;
+    @apply rounded-2xl border border-peek-border bg-peek-surface p-8 shadow-card sm:p-10;
   }
 
   .peek-auth-page {
-    background-image:
-      radial-gradient(circle at 20% 10%, rgb(255 200 87 / 0.5), transparent 40%),
-      radial-gradient(circle at 80% 20%, rgb(255 107 157 / 0.35), transparent 38%),
-      radial-gradient(circle at 50% 90%, rgb(196 181 253 / 0.35), transparent 42%);
+    @apply bg-peek-warm;
   }
 
   .peek-auth-card {
-    @apply border-2 border-white bg-white/95 shadow-card;
+    @apply border-peek-border bg-peek-surface;
   }
 
   .peek-hero {
-    background: linear-gradient(
-      135deg,
-      #ff6b9d 0%,
-      #ff8c69 28%,
-      #ffc857 58%,
-      #c4b5fd 100%
-    );
-  }
-
-  .peek-logo {
-    @apply bg-gradient-to-r from-peek-primary via-peek-coral to-peek-sunny bg-clip-text font-extrabold text-transparent;
+    @apply bg-gradient-to-br from-sky-600 to-cyan-700;
   }
 
   .peek-blob {
-    @apply pointer-events-none absolute rounded-full blur-3xl;
+    @apply pointer-events-none absolute rounded-full bg-white/10 blur-3xl;
   }
 
   .peek-blob-a {
-    left: -4rem;
-    top: 2rem;
-    height: 16rem;
-    width: 16rem;
-    background: rgb(255 255 255 / 0.22);
-    animation: float 8s ease-in-out infinite;
+    left: -5rem;
+    top: 0;
+    height: 14rem;
+    width: 14rem;
   }
 
   .peek-blob-b {
-    right: -3rem;
-    top: 35%;
+    right: -4rem;
+    bottom: 0;
     height: 12rem;
     width: 12rem;
-    background: rgb(255 255 255 / 0.18);
-    animation: float 11s ease-in-out infinite reverse;
-  }
-
-  .peek-blob-c {
-    bottom: -2rem;
-    left: 30%;
-    height: 10rem;
-    width: 10rem;
-    background: rgb(255 255 255 / 0.15);
-    animation: float 9s ease-in-out infinite;
-  }
-
-  .peek-float-emoji {
-    @apply pointer-events-none absolute select-none text-4xl opacity-90 sm:text-5xl;
-    animation: float 6s ease-in-out infinite;
   }
 
   .peek-fade-in {
-    animation: peek-fade-in 0.55s ease-out both;
+    animation: peek-fade-in 0.45s ease-out both;
   }
 
-  .peek-delay-1 { animation-delay: 0.08s; }
-  .peek-delay-2 { animation-delay: 0.16s; }
-  .peek-delay-3 { animation-delay: 0.24s; }
-  .peek-delay-4 { animation-delay: 0.32s; }
-  .peek-delay-5 { animation-delay: 0.4s; }
+  .peek-delay-1 { animation-delay: 0.06s; }
+  .peek-delay-2 { animation-delay: 0.12s; }
+  .peek-delay-3 { animation-delay: 0.18s; }
+  .peek-delay-4 { animation-delay: 0.24s; }
+  .peek-delay-5 { animation-delay: 0.3s; }
 
   .nav-link {
-    @apply relative font-semibold transition-colors duration-200 hover:text-peek-primary;
-  }
-
-  .nav-link::after {
-    content: "";
-    @apply absolute -bottom-1 left-0 h-1 w-0 rounded-full bg-gradient-to-r from-peek-primary to-peek-sunny transition-all duration-200;
-  }
-
-  .nav-link:hover::after {
-    @apply w-full;
+    @apply font-medium text-peek-muted transition-colors hover:text-peek-primary;
   }
 
   details[open] .account-menu-chevron {
@@ -219,55 +179,30 @@
   }
 
   .input-field {
-    @apply w-full rounded-2xl border-2 border-peek-peach bg-white px-4 py-3 font-medium text-peek-text placeholder:text-peek-muted/80 focus:border-peek-primary focus:outline-none focus:ring-4 focus:ring-pink-100 disabled:bg-peek-cream;
+    @apply w-full rounded-xl border border-peek-border bg-peek-surface px-4 py-3 text-peek-text placeholder:text-stone-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:bg-stone-50;
   }
 
   .badge-open {
-    @apply rounded-full bg-peek-mint/30 px-3 py-1 text-xs font-bold uppercase tracking-wide text-emerald-800;
+    @apply rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-800;
   }
 
   .peek-mobile-nav {
-    @apply border-t-2 border-peek-peach/60 bg-peek-cream/95 backdrop-blur-md;
+    @apply border-t border-peek-border bg-peek-surface/95 backdrop-blur-md;
   }
 
-  .peek-slide-up {
-    animation: peek-slide-up 0.35s ease-out;
-  }
-
-  .peek-rating-prompt {
-    animation: peek-pulse-ring 2.5s ease-in-out infinite;
+  .peek-stat {
+    @apply rounded-2xl border border-peek-border bg-peek-surface p-6 shadow-card;
   }
 }
 
 @keyframes peek-fade-in {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes peek-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(1.5rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes peek-pulse-ring {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(255 200 87, 0.45);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(255 200 87, 0);
   }
 }
 
@@ -298,11 +233,11 @@
     border: none;
     outline: none;
     background: transparent;
-    color: #4a3728;
+    color: #1c1917;
     color-scheme: light;
   }
 
   gmp-place-autocomplete::part(input)::placeholder {
-    color: #9c8b7a;
+    color: #a8a29e;
   }
 }

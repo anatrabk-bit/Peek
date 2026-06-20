@@ -33,23 +33,20 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
     <dialog
       ref={dialogRef}
       onClose={onClose}
-      className="w-full max-w-md rounded-3xl border border-sky-100 bg-gradient-to-b from-white to-sky-50/50 p-8 shadow-card-hover backdrop:bg-zinc-900/50"
+      className="w-full max-w-md rounded-2xl border border-peek-border bg-peek-surface p-8 shadow-card-hover backdrop:bg-zinc-900/40"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-2xl" aria-hidden>
-            ✨
-          </p>
-          <h2 className="heading-section mt-2 text-xl">Join Peek</h2>
+          <h2 className="heading-section text-xl">Join Peek</h2>
           <p className="mt-2 text-body">
-            Email, phone, magic link — then pick a fun nickname.
+            Email, phone, and a magic link — that&apos;s all.
           </p>
         </div>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close login dialog"
-          className="rounded-full px-2 py-1 text-peek-muted transition hover:bg-peek-card hover:text-peek-text"
+          className="rounded-lg px-2 py-1 text-peek-muted transition hover:bg-stone-100 hover:text-peek-text"
         >
           ✕
         </button>
@@ -61,7 +58,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
 
       <p className="mt-5 text-center text-xs text-peek-muted">
         <Link href="/login" className="font-semibold text-peek-primary hover:underline">
-          Use the full sign-up page instead
+          Open full sign-up page
         </Link>
       </p>
     </dialog>
