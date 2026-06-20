@@ -17,6 +17,8 @@ export type AdminRequestRow = {
 export type AdminUserRow = {
   id: string;
   email: string;
+  phone: string | null;
+  nickname: string | null;
   created_at: string;
 };
 
@@ -67,8 +69,8 @@ export async function getAdminRequests(): Promise<AdminRequestRow[]> {
 }
 
 export async function getAdminUsers(): Promise<AdminUserRow[]> {
-  const admin = await requireAdmin();
-  if (!admin) {
+  const adminUser = await requireAdmin();
+  if (!adminUser) {
     return [];
   }
 
@@ -83,12 +85,44 @@ export async function getAdminUsers(): Promise<AdminUserRow[]> {
     return [];
   }
 
-  return (data.users ?? [])
-    .map((user) => ({
-      id: user.id,
-      email: user.email ?? "—",
-      created_at: user.created_at
-    }))
+  const authUsers = data.users ?? [];
+  const userIds = authUsers.map((user) => user.id);
+
+  const profilesByUserId = new Map<
+    string,
+    { nickname: string | null; phone: string | null }
+  >();
+
+  if (userIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("peek_profiles")
+      .select("user_id, nickname")
+      .in("user_id", userIds);
+
+    for (const profile of profiles ?? []) {
+      profilesByUserId.set(profile.user_id, {
+        nickname: profile.nickname,
+        phone: null
+      });
+    }
+  }
+
+  return authUsers
+    .map((user) => {
+      const meta = user.user_metadata ?? {};
+      const phone =
+        typeof meta.phone === "string" && meta.phone.trim()
+          ? meta.phone.trim()
+          : null;
+
+      return {
+        id: user.id,
+        email: user.email ?? "—",
+        phone,
+        nickname: profilesByUserId.get(user.id)?.nickname ?? null,
+        created_at: user.created_at
+      };
+    })
     .sort(
       (a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()

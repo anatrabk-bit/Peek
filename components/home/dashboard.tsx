@@ -25,8 +25,8 @@ const actions = [
     href: "/requests",
     emoji: "🔍",
     badgeClass: "peek-icon-badge-emerald",
-    title: "Find work",
-    description: "Open tasks nearby — earn stars."
+    title: "Help nearby",
+    description: "Open tasks you can pick up and earn stars."
   },
   {
     href: "/my-requests",

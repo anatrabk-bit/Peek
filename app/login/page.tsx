@@ -65,7 +65,7 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
               Create your account
             </h2>
             <p className="mt-1 text-sm text-peek-muted">
-              Email and phone, then one magic link.
+              Email and phone — you&apos;re in instantly. No email link needed.
             </p>
           </div>
           <LoginForm

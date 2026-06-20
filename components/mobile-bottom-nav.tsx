@@ -9,13 +9,13 @@ type MobileBottomNavProps = {
 
 const guestTabs = [
   { href: "/", label: "Home" },
-  { href: "/requests", label: "Jobs" },
+  { href: "/requests", label: "Help" },
   { href: "/login", label: "Join" }
 ] as const;
 
 const userTabs = [
   { href: "/", label: "Home" },
-  { href: "/requests", label: "Jobs" },
+  { href: "/requests", label: "Help" },
   { href: "/post-request", label: "Post" },
   { href: "/my-requests", label: "Mine" },
   { href: "/profile", label: "Profile" }

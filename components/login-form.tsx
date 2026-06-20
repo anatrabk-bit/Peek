@@ -1,25 +1,18 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { getSiteUrl } from "@/lib/site-url";
 
 type LoginFormProps = {
   errorMessage?: string | null;
   redirectTo?: string;
 };
 
-function isValidPhone(raw: string): boolean {
-  const digits = raw.replace(/\D/g, "");
-  return digits.length >= 7 && digits.length <= 15;
-}
-
 export function LoginForm({ errorMessage, redirectTo }: LoginFormProps) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">(
-    "idle"
-  );
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [message, setMessage] = useState<string | null>(errorMessage ?? null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -27,87 +20,37 @@ export function LoginForm({ errorMessage, redirectTo }: LoginFormProps) {
     setStatus("loading");
     setMessage(null);
 
-    const trimmedEmail = email.trim();
-    const trimmedPhone = phone.trim();
-
-    if (!isValidPhone(trimmedPhone)) {
-      setStatus("error");
-      setMessage("Enter a valid phone number (at least 7 digits).");
-      return;
-    }
-
-    const supabase = createClient();
-    const nextPath = redirectTo?.startsWith("/") ? redirectTo : "/";
-    const callbackUrl = `${getSiteUrl()}/auth/confirm`;
-
-    document.cookie = `peek_auth_next=${encodeURIComponent(nextPath)}; path=/; max-age=3600; SameSite=Lax`;
-
-    const { error } = await supabase.auth.signInWithOtp({
-      email: trimmedEmail,
-      options: {
-        emailRedirectTo: callbackUrl,
-        data: {
-          phone: trimmedPhone
-        }
-      }
-    });
-
-    if (error) {
-      setStatus("error");
-      setMessage(
-        error.message.toLowerCase().includes("rate limit")
-          ? "Email rate limit reached — use the dev sign-in button below (no email needed)."
-          : error.message
-      );
-      return;
-    }
-
-    setStatus("sent");
-    setMessage(
-      "You're almost in! Check your inbox and tap the link to finish joining Peek."
-    );
-  }
-
-  async function handleDevLogin() {
-    const trimmed = email.trim();
-    if (!trimmed) {
-      setStatus("error");
-      setMessage("Enter your email first, then tap Dev sign-in.");
-      return;
-    }
-
-    setStatus("loading");
-    setMessage(null);
-
     try {
-      const body = new FormData();
-      body.set("email", trimmed);
-      if (phone.trim()) {
-        body.set("phone", phone.trim());
-      }
-
-      const response = await fetch("/auth/dev-login", {
+      const response = await fetch("/api/auth/signup", {
         method: "POST",
-        body,
-        credentials: "same-origin",
-        redirect: "follow"
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          phone: phone.trim()
+        }),
+        credentials: "same-origin"
       });
 
-      if (response.url.includes("/login")) {
-        window.location.href = response.url;
+      const data = (await response.json()) as {
+        ok?: boolean;
+        error?: string;
+        isNew?: boolean;
+      };
+
+      if (!response.ok || data.error) {
+        setStatus("error");
+        setMessage(data.error ?? "Something went wrong. Try again.");
         return;
       }
 
-      window.location.href = redirectTo?.startsWith("/") ? redirectTo : "/";
+      const nextPath = redirectTo?.startsWith("/") ? redirectTo : "/";
+      router.push(nextPath);
+      router.refresh();
     } catch {
       setStatus("error");
-      setMessage(
-        "Dev sign-in could not reach the server. Check that npm run dev is running on your PC and the tunnel is still open."
-      );
+      setMessage("Could not reach the server. Check your connection and try again.");
     }
   }
-
-  const isDev = process.env.NODE_ENV === "development";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -124,7 +67,7 @@ export function LoginForm({ errorMessage, redirectTo }: LoginFormProps) {
           placeholder="you@example.com"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          disabled={status === "loading" || status === "sent"}
+          disabled={status === "loading"}
           className="input-field"
         />
       </div>
@@ -143,45 +86,28 @@ export function LoginForm({ errorMessage, redirectTo }: LoginFormProps) {
           placeholder="+44 7700 900123"
           value={phone}
           onChange={(event) => setPhone(event.target.value)}
-          disabled={status === "loading" || status === "sent"}
+          disabled={status === "loading"}
           className="input-field"
         />
         <p className="text-xs text-peek-muted">
-          So we can reach you about your requests — never shown publicly.
+          Private — only used to reach you about your requests.
         </p>
       </div>
 
       <button
         type="submit"
-        disabled={status === "loading" || status === "sent"}
+        disabled={status === "loading"}
         className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {status === "loading"
-          ? "Sending magic link…"
-          : status === "sent"
-            ? "Link sent"
-            : "Send me a magic link"}
+        {status === "loading" ? "Joining…" : "Join Peek"}
       </button>
-
-      {isDev && (
-        <button
-          type="button"
-          onClick={handleDevLogin}
-          disabled={status === "loading" || status === "sent"}
-          className="btn-secondary w-full disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {status === "loading" ? "Signing in…" : "Dev: sign in instantly (no email)"}
-        </button>
-      )}
 
       {message && (
         <p
           className={`rounded-xl px-4 py-3 text-sm leading-relaxed ${
             status === "error"
               ? "border border-red-200 bg-red-50 text-red-800"
-              : status === "sent"
-                ? "peek-callout-success"
-                : "peek-callout"
+              : "peek-callout"
           }`}
           role="status"
         >

@@ -101,7 +101,7 @@ export default async function RootLayout({
                 </Link>
               )}
               <Link href="/requests" className="nav-link whitespace-nowrap">
-                Find work
+                Help nearby
               </Link>
               <Link href="/profile" className="nav-link">
                 Profile

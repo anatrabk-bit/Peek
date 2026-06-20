@@ -99,6 +99,64 @@ export function AdminPanel({ requests, users }: AdminPanelProps) {
 
       <section className="space-y-4">
         <div>
+          <h2 className="heading-section text-xl">New signups</h2>
+          <p className="mt-1 text-sm text-peek-muted">
+            {users.length} user{users.length === 1 ? "" : "s"} — newest first.
+            Phone comes from signup; nickname after they save their profile.
+          </p>
+        </div>
+
+        <div className="card-static overflow-x-auto">
+          <table className="w-full min-w-[720px] text-left text-sm">
+            <thead>
+              <tr className="border-b border-zinc-200 text-xs font-semibold uppercase tracking-wide text-peek-muted">
+                <th className="px-3 py-3">Joined</th>
+                <th className="px-3 py-3">Email</th>
+                <th className="px-3 py-3">Phone</th>
+                <th className="px-3 py-3">Peek nickname</th>
+                <th className="px-3 py-3">User ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-3 py-8 text-center text-peek-muted"
+                  >
+                    No users yet.
+                  </td>
+                </tr>
+              )}
+              {users.map((user) => (
+                <tr
+                  key={user.id}
+                  className="border-b border-zinc-100 last:border-0"
+                >
+                  <td className="px-3 py-4 whitespace-nowrap text-peek-muted">
+                    {formatDate(user.created_at)}
+                  </td>
+                  <td className="px-3 py-4 font-medium text-peek-text">
+                    {user.email}
+                  </td>
+                  <td className="px-3 py-4 text-peek-text" dir="ltr">
+                    {user.phone ?? "—"}
+                  </td>
+                  <td className="px-3 py-4 text-peek-text" dir="ltr">
+                    {user.nickname?.trim() || "—"}
+                  </td>
+                  <td className="px-3 py-4 font-mono text-xs text-peek-muted">
+                    {user.id.slice(0, 8)}…
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <div>
           <h2 className="heading-section text-xl">Requests</h2>
           <p className="mt-1 text-sm text-peek-muted">
             {requests.length} total — change status or delete as needed.
@@ -197,51 +255,6 @@ export function AdminPanel({ requests, users }: AdminPanelProps) {
                         Delete
                       </button>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <div>
-          <h2 className="heading-section text-xl">Users</h2>
-          <p className="mt-1 text-sm text-peek-muted">
-            {users.length} signed up via Supabase Auth.
-          </p>
-        </div>
-
-        <div className="card-static overflow-x-auto">
-          <table className="w-full min-w-[480px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-zinc-200 text-xs font-semibold uppercase tracking-wide text-peek-muted">
-                <th className="px-3 py-3">Email</th>
-                <th className="px-3 py-3">Joined</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={2}
-                    className="px-3 py-8 text-center text-peek-muted"
-                  >
-                    No users yet.
-                  </td>
-                </tr>
-              )}
-              {users.map((user) => (
-                <tr
-                  key={user.id}
-                  className="border-b border-zinc-100 last:border-0"
-                >
-                  <td className="px-3 py-4 font-medium text-peek-text">
-                    {user.email}
-                  </td>
-                  <td className="px-3 py-4 whitespace-nowrap text-peek-muted">
-                    {formatDate(user.created_at)}
                   </td>
                 </tr>
               ))}

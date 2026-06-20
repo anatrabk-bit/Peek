@@ -54,7 +54,7 @@ export default async function AdminPage() {
       <div>
         <h1 className="heading-section text-3xl sm:text-4xl">Admin</h1>
         <p className="mt-3 text-body">
-          Manage requests and view signed-up users. Signed in as {user.email}.
+          View new signups and manage requests. Signed in as {user.email}.
         </p>
       </div>
 
