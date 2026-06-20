@@ -14,6 +14,7 @@ import Link from "next/link";
 import { AppProviders } from "@/components/app-providers";
 import { Footer } from "@/components/footer";
 import { getUserSummary } from "@/lib/auth-user";
+import { getOrCreatePeekProfile } from "@/lib/supabase/peek-profile";
 import {
   getRecentNotifications,
   getUnreadNotificationCount
@@ -28,9 +29,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Peek - Skip the trip. Ask a Peek.",
+  title: "Peek — Skip the trip. Spread a little good.",
   description:
-    "Post a request when you need help in person. Become a Peek and earn helping nearby.",
+    "Ask someone nearby for a quick check, or help out and earn stars. Anonymous, friendly, free to post.",
   applicationName: "Peek",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
@@ -68,12 +69,13 @@ export default async function RootLayout({
     data: { user }
   } = await supabase.auth.getUser();
 
-  const [unreadCount, recentNotifications] = user
+  const [unreadCount, recentNotifications, peekProfile] = user
     ? await Promise.all([
         getUnreadNotificationCount(user.id),
-        getRecentNotifications(user.id)
+        getRecentNotifications(user.id),
+        getOrCreatePeekProfile(user.id)
       ])
-    : [0, []];
+    : [0, [], null];
 
   const notificationShell = (
     <>
@@ -114,7 +116,7 @@ export default async function RootLayout({
 
             <AuthStatus
               initialSignedIn={!!user}
-              initialUser={getUserSummary(user)}
+              initialUser={getUserSummary(user, peekProfile)}
             />
           </div>
         </nav>

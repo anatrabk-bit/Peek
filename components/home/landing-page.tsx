@@ -5,19 +5,19 @@ const steps = [
     emoji: "✍️",
     title: "Describe what you need",
     description:
-      "Is the place accessible? Is the item in stock? Does it look like the photos? Just ask."
+      "Is the place open? Is the item in stock? Does it look like the photos? Just ask — it's free."
   },
   {
     emoji: "📍",
-    title: "A nearby Peek checks it for you",
+    title: "A nearby Peek checks for you",
     description:
       "Someone already on the ground confirms what you need — with photos if you want."
   },
   {
-    emoji: "✅",
-    title: "Get your answer fast",
+    emoji: "⭐",
+    title: "Everyone wins",
     description:
-      "Real confirmation and photos if needed — Peeks earn stars, not cash."
+      "You get your answer. Peeks earn stars (and vouchers!) for spreading a little good."
   }
 ];
 
@@ -30,15 +30,16 @@ export function LandingPage() {
         <div className="peek-blob peek-blob-c" aria-hidden />
 
         <div className="relative mx-auto max-w-3xl space-y-6 peek-fade-in">
-          <p className="inline-flex rounded-full bg-white/15 px-4 py-1.5 text-sm font-medium backdrop-blur">
-            Real people. Real places. Real answers.
+          <p className="inline-flex rounded-full bg-white/20 px-4 py-1.5 text-sm font-medium backdrop-blur">
+            Kindness nearby 🌈 Real people. Real answers.
           </p>
           <h1 className="heading-hero mx-auto max-w-3xl text-white leading-tight sm:text-balance">
             <span className="mb-2 block sm:mb-0 sm:inline">Skip the trip.</span>{" "}
-            <span className="block sm:inline">Ask a Peek.</span>
+            <span className="block sm:inline">Spread a little good.</span>
           </h1>
           <p className="mx-auto max-w-xl text-lg leading-relaxed text-sky-100">
-            Get real answers from someone already there.
+            Ask someone nearby for a quick check — or help out and earn stars.
+            Anonymous, friendly, and free to post.
           </p>
           <div className="mx-auto grid max-w-2xl grid-cols-2 gap-4 pt-2 sm:gap-6">
             <div className="flex flex-col items-center gap-2">
@@ -48,7 +49,7 @@ export function LandingPage() {
               >
                 Post a request
               </Link>
-              <span className="text-sm text-sky-100">Get your answer fast</span>
+              <span className="text-sm text-sky-100">Free · no payment</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Link
@@ -57,7 +58,9 @@ export function LandingPage() {
               >
                 Become a Peek
               </Link>
-              <span className="text-sm text-sky-100">Already there. Earn from it.</span>
+              <span className="text-sm text-sky-100">
+                Earn stars, stay anonymous
+              </span>
             </div>
           </div>
         </div>
@@ -68,7 +71,7 @@ export function LandingPage() {
           <div className="mb-12 text-center peek-fade-in peek-delay-1">
             <h2 className="heading-section">How it works</h2>
             <p className="mt-3 text-body">
-              You post. A Peek verifies. You get the answer.
+              You post. A Peek verifies. Good vibes all round.
             </p>
           </div>
 
@@ -78,7 +81,7 @@ export function LandingPage() {
                 key={step.title}
                 className={`card card-fun text-left peek-fade-in peek-delay-${index + 2}`}
               >
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-50 text-3xl">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-100 to-amber-50 text-3xl">
                   {step.emoji}
                 </div>
                 <p className="mt-4 text-sm font-semibold text-peek-primary">
@@ -95,18 +98,22 @@ export function LandingPage() {
       </section>
 
       <section className="px-6 py-16">
-        <div className="card-static card-fun mx-auto max-w-3xl text-center peek-fade-in peek-delay-5">
-          <h2 className="heading-section">Two ways to use Peek</h2>
+        <div className="card-static card-fun mx-auto max-w-3xl border border-amber-100 bg-gradient-to-br from-amber-50/50 via-white to-sky-50/50 text-center peek-fade-in peek-delay-5">
+          <p className="text-3xl" aria-hidden>
+            ✨
+          </p>
+          <h2 className="heading-section mt-3">Two ways to spread good</h2>
           <p className="mt-3 text-body">
             Post when you need eyes somewhere you can&apos;t be. Browse open
-            requests when you want to help as a Peek.
+            requests when you want to help as a Peek — pick a fun nickname and
+            go.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Link href="/post-request" className="btn-primary btn-fun">
               Post a request
             </Link>
-            <Link href="/requests" className="btn-secondary btn-fun">
-              Help as a Peek
+            <Link href="/login" className="btn-secondary btn-fun">
+              Join Peek
             </Link>
           </div>
         </div>

@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
   const { origin } = new URL(request.url);
   let email = "";
   let name = "";
+  let phone = "";
 
   const contentType = request.headers.get("content-type") ?? "";
   if (contentType.includes("application/json")) {
@@ -19,6 +20,7 @@ export async function POST(request: NextRequest) {
       const body = await request.json();
       email = typeof body.email === "string" ? body.email.trim() : "";
       name = typeof body.name === "string" ? body.name.trim() : "";
+      phone = typeof body.phone === "string" ? body.phone.trim() : "";
     } catch {
       return NextResponse.redirect(`${origin}/login?error=auth_failed`);
     }
@@ -26,6 +28,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     email = String(formData.get("email") ?? "").trim();
     name = String(formData.get("name") ?? "").trim();
+    phone = String(formData.get("phone") ?? "").trim();
   }
 
   if (!email) {
@@ -37,7 +40,7 @@ export async function POST(request: NextRequest) {
 
   let result: Awaited<ReturnType<typeof verifyDevLoginEmail>>;
   try {
-    result = await verifyDevLoginEmail(supabase, email, name);
+    result = await verifyDevLoginEmail(supabase, email, { name, phone });
   } catch (err) {
     const loginUrl = new URL("/login", origin);
     loginUrl.searchParams.set("error", "auth_failed");

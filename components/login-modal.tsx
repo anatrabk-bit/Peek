@@ -33,13 +33,16 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
     <dialog
       ref={dialogRef}
       onClose={onClose}
-      className="w-full max-w-md rounded-2xl border-0 bg-white p-8 shadow-card-hover backdrop:bg-zinc-900/50"
+      className="w-full max-w-md rounded-3xl border border-sky-100 bg-gradient-to-b from-white to-sky-50/50 p-8 shadow-card-hover backdrop:bg-zinc-900/50"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="heading-section text-xl">Welcome back</h2>
+          <p className="text-2xl" aria-hidden>
+            ✨
+          </p>
+          <h2 className="heading-section mt-2 text-xl">Join Peek</h2>
           <p className="mt-2 text-body">
-            Your email, a quick link - that&apos;s it.
+            Email, phone, magic link — then pick a fun nickname.
           </p>
         </div>
         <button
@@ -58,7 +61,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
 
       <p className="mt-5 text-center text-xs text-peek-muted">
         <Link href="/login" className="font-semibold text-peek-primary hover:underline">
-          Use the full login page instead
+          Use the full sign-up page instead
         </Link>
       </p>
     </dialog>

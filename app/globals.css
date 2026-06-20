@@ -9,13 +9,12 @@
 @layer base {
   body {
     @apply font-sans text-peek-text antialiased;
-    background-color: #f8fafc;
-    background-image: linear-gradient(
-      180deg,
-      rgb(240 249 255 / 0.9) 0%,
-      #fafaf9 35%,
-      #fafaf9 100%
-    );
+    background-color: #fffbeb;
+    background-image:
+      radial-gradient(circle at 12% 8%, rgb(254 249 195 / 0.55), transparent 42%),
+      radial-gradient(circle at 88% 4%, rgb(224 242 254 / 0.7), transparent 38%),
+      radial-gradient(circle at 50% 100%, rgb(254 215 170 / 0.25), transparent 45%),
+      linear-gradient(180deg, rgb(240 249 255 / 0.85) 0%, #fafaf9 40%, #fffbeb 100%);
     background-attachment: fixed;
   }
 
@@ -75,11 +74,11 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-peek-accent px-6 py-3 font-semibold text-white shadow-sm transition duration-200 hover:opacity-95 hover:shadow-md active:scale-[0.98];
+    @apply inline-flex items-center justify-center rounded-full bg-gradient-to-r from-peek-accent to-orange-500 px-6 py-3 font-semibold text-white shadow-sm transition duration-200 hover:opacity-95 hover:shadow-md active:scale-[0.98];
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-full border-2 border-peek-primary px-6 py-3 font-semibold text-peek-primary transition duration-200 hover:bg-sky-50 hover:shadow-sm active:scale-[0.98];
+    @apply inline-flex items-center justify-center rounded-full border-2 border-peek-primary bg-white/80 px-6 py-3 font-semibold text-peek-primary transition duration-200 hover:bg-sky-50 hover:shadow-sm active:scale-[0.98];
   }
 
   .btn-hero-outline {
@@ -95,11 +94,21 @@
   }
 
   .card {
-    @apply rounded-2xl bg-white p-6 shadow-card transition duration-200 hover:shadow-card-hover;
+    @apply rounded-2xl border border-white/80 bg-white/95 p-6 shadow-card backdrop-blur-sm transition duration-200 hover:shadow-card-hover;
   }
 
   .card-static {
-    @apply rounded-2xl bg-white p-6 shadow-card;
+    @apply rounded-2xl border border-white/80 bg-white/95 p-6 shadow-card backdrop-blur-sm;
+  }
+
+  .peek-auth-page {
+    background-image:
+      radial-gradient(circle at 50% 0%, rgb(254 240 138 / 0.35), transparent 50%),
+      radial-gradient(circle at 100% 80%, rgb(186 230 253 / 0.4), transparent 45%);
+  }
+
+  .peek-auth-card {
+    @apply border-sky-100 bg-white/95 shadow-card;
   }
 
   .card-fun {
@@ -107,7 +116,7 @@
   }
 
   .peek-hero {
-    @apply bg-gradient-to-b from-peek-primary to-peek-primary-dark;
+    @apply bg-gradient-to-br from-sky-500 via-peek-primary to-violet-600;
   }
 
   .peek-blob {

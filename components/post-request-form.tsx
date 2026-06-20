@@ -57,11 +57,11 @@ export function PostRequestForm() {
 
   return (
     <form onSubmit={handleSubmit} className="card-static space-y-5">
-      <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
-        <p className="font-semibold">Free to post</p>
+      <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-sky-50 px-4 py-3 text-sm text-emerald-900">
+        <p className="font-semibold">Free to post 🌈</p>
         <p className="mt-1 leading-relaxed">
           Peeks help because they&apos;re already nearby — they earn stars, not
-          cash per task.
+          money. Good vibes only.
         </p>
       </div>
 

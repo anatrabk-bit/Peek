@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { getDisplayName, type AuthUserSummary } from "@/lib/auth-user";
-import { UserInitialsAvatar } from "@/components/user-initials-avatar";
+import { getPeekDisplayName, type AuthUserSummary } from "@/lib/auth-user";
+import { UserAvatarIcon } from "@/components/user-avatar-icon";
 
 type AuthStatusProps = {
   initialSignedIn: boolean;
@@ -43,7 +43,7 @@ export default function AuthStatus({
 
     const {
       data: { subscription }
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
         router.refresh();
       }
@@ -75,48 +75,47 @@ export default function AuthStatus({
     return (
       <Link
         href="/login"
-        className="rounded-full border-2 border-peek-primary px-4 py-1.5 text-peek-primary transition hover:bg-sky-50"
+        className="rounded-full border-2 border-peek-primary bg-gradient-to-r from-sky-50 to-amber-50 px-4 py-1.5 font-semibold text-peek-primary transition hover:shadow-sm"
       >
-        Log in
+        Join
       </Link>
     );
   }
 
-  const displayName = getDisplayName(user) ?? "Account";
+  const peekName = getPeekDisplayName(user);
+  const avatarIcon = user.peekAvatarIcon ?? "✨";
 
   return (
     <details ref={menuRef} className="relative shrink-0">
       <summary
-        className="flex cursor-pointer list-none items-center gap-1.5 rounded-full py-0.5 pl-0.5 pr-2 transition hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peek-primary focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
-        aria-label={`Account menu for ${displayName}`}
+        className="flex cursor-pointer list-none items-center gap-1.5 rounded-full py-0.5 pl-0.5 pr-2 transition hover:bg-amber-50/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-peek-primary focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
+        aria-label={`Account menu for ${peekName}`}
       >
-        <UserInitialsAvatar initials={user.initials} size="sm" />
+        <UserAvatarIcon icon={avatarIcon} size="sm" />
         <Chevron />
       </summary>
 
       <div
-        className="absolute right-0 z-[60] mt-2 w-72 origin-top-right rounded-2xl border border-zinc-200 bg-white p-4 shadow-lg"
+        className="absolute right-0 z-[60] mt-2 w-72 origin-top-right rounded-2xl border border-sky-100 bg-white p-4 shadow-lg"
         role="menu"
         onPointerDown={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
-          <UserInitialsAvatar initials={user.initials} size="lg" />
+        <div className="flex items-center gap-3 border-b border-sky-50 pb-4">
+          <UserAvatarIcon icon={avatarIcon} size="lg" />
           <div className="min-w-0 flex-1">
             <p className="truncate font-semibold text-peek-text" dir="ltr">
-              {displayName}
+              {peekName}
             </p>
-            {user.email && (
-              <p className="mt-0.5 truncate text-sm text-peek-muted" dir="ltr">
-                {user.email}
-              </p>
-            )}
+            <p className="mt-0.5 text-sm text-peek-muted">
+              Your Peek identity ✨
+            </p>
           </div>
         </div>
 
         <div className="pt-3">
           <Link
             href="/my-requests"
-            className="block rounded-xl px-3 py-2.5 text-sm font-medium text-peek-text transition hover:bg-zinc-50"
+            className="block rounded-xl px-3 py-2.5 text-sm font-medium text-peek-text transition hover:bg-sky-50"
             onClick={closeMenu}
             role="menuitem"
           >
@@ -124,11 +123,11 @@ export default function AuthStatus({
           </Link>
           <Link
             href="/profile"
-            className="block rounded-xl px-3 py-2.5 text-sm font-medium text-peek-text transition hover:bg-zinc-50"
+            className="block rounded-xl px-3 py-2.5 text-sm font-medium text-peek-text transition hover:bg-sky-50"
             onClick={closeMenu}
             role="menuitem"
           >
-            Profile
+            Profile &amp; stars
           </Link>
           <Link
             href="/auth/signout"

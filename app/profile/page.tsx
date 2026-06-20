@@ -35,7 +35,8 @@ export default async function UserProfilePage() {
       <div>
         <h1 className="heading-section text-3xl sm:text-4xl">Your profile</h1>
         <p className="mt-3 text-body">
-          You stay anonymous on Peek — others only see your nickname and icon.
+          This is your happy corner — nickname, icon, and stars. Nobody sees your
+          real name or email.
         </p>
       </div>
 
@@ -46,7 +47,7 @@ export default async function UserProfilePage() {
             {profile.nickname}
           </p>
           <p className="truncate text-sm text-peek-muted">
-            Only you see your login email
+            Your Peek name — shown everywhere on the site
           </p>
         </div>
       </article>

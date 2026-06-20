@@ -9,8 +9,14 @@ type LoginFormProps = {
   redirectTo?: string;
 };
 
+function isValidPhone(raw: string): boolean {
+  const digits = raw.replace(/\D/g, "");
+  return digits.length >= 7 && digits.length <= 15;
+}
+
 export function LoginForm({ errorMessage, redirectTo }: LoginFormProps) {
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">(
     "idle"
   );
@@ -21,18 +27,28 @@ export function LoginForm({ errorMessage, redirectTo }: LoginFormProps) {
     setStatus("loading");
     setMessage(null);
 
+    const trimmedEmail = email.trim();
+    const trimmedPhone = phone.trim();
+
+    if (!isValidPhone(trimmedPhone)) {
+      setStatus("error");
+      setMessage("Enter a valid phone number (at least 7 digits).");
+      return;
+    }
+
     const supabase = createClient();
     const nextPath = redirectTo?.startsWith("/") ? redirectTo : "/";
-
-    // כתובת קבועה מה-env — לא תלויה בפורט אקראי (3000/3001/3002)
     const callbackUrl = `${getSiteUrl()}/auth/confirm`;
 
     document.cookie = `peek_auth_next=${encodeURIComponent(nextPath)}; path=/; max-age=3600; SameSite=Lax`;
 
     const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
+      email: trimmedEmail,
       options: {
-        emailRedirectTo: callbackUrl
+        emailRedirectTo: callbackUrl,
+        data: {
+          phone: trimmedPhone
+        }
       }
     });
 
@@ -47,7 +63,9 @@ export function LoginForm({ errorMessage, redirectTo }: LoginFormProps) {
     }
 
     setStatus("sent");
-    setMessage("Done - check your inbox and tap the link to sign in.");
+    setMessage(
+      "You're almost in! Check your inbox and tap the link to finish joining Peek."
+    );
   }
 
   async function handleDevLogin() {
@@ -64,6 +82,9 @@ export function LoginForm({ errorMessage, redirectTo }: LoginFormProps) {
     try {
       const body = new FormData();
       body.set("email", trimmed);
+      if (phone.trim()) {
+        body.set("phone", phone.trim());
+      }
 
       const response = await fetch("/auth/dev-login", {
         method: "POST",
@@ -92,7 +113,7 @@ export function LoginForm({ errorMessage, redirectTo }: LoginFormProps) {
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="space-y-2">
         <label htmlFor="email" className="text-sm font-semibold text-peek-text">
-          Email address
+          Email
         </label>
         <input
           id="email"
@@ -108,12 +129,38 @@ export function LoginForm({ errorMessage, redirectTo }: LoginFormProps) {
         />
       </div>
 
+      <div className="space-y-2">
+        <label htmlFor="phone" className="text-sm font-semibold text-peek-text">
+          Phone number
+        </label>
+        <input
+          id="phone"
+          name="phone"
+          type="tel"
+          required
+          autoComplete="tel"
+          inputMode="tel"
+          placeholder="+44 7700 900123"
+          value={phone}
+          onChange={(event) => setPhone(event.target.value)}
+          disabled={status === "loading" || status === "sent"}
+          className="input-field"
+        />
+        <p className="text-xs text-peek-muted">
+          So we can reach you about your requests — never shown publicly.
+        </p>
+      </div>
+
       <button
         type="submit"
         disabled={status === "loading" || status === "sent"}
         className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {status === "loading" ? "Sending…" : "Email me a sign-in link"}
+        {status === "loading"
+          ? "Sending magic link…"
+          : status === "sent"
+            ? "Link sent ✨"
+            : "Send me a magic link"}
       </button>
 
       {isDev && (
@@ -129,8 +176,12 @@ export function LoginForm({ errorMessage, redirectTo }: LoginFormProps) {
 
       {message && (
         <p
-          className={`text-sm leading-relaxed ${
-            status === "error" ? "text-red-600" : "text-peek-muted"
+          className={`rounded-xl px-4 py-3 text-sm leading-relaxed ${
+            status === "error"
+              ? "bg-red-50 text-red-700"
+              : status === "sent"
+                ? "bg-emerald-50 text-emerald-800"
+                : "bg-sky-50 text-sky-900"
           }`}
           role="status"
         >

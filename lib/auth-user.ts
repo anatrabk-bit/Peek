@@ -5,6 +5,13 @@ export type AuthUserSummary = {
   email: string | null;
   avatarUrl: string | null;
   initials: string;
+  peekNickname: string | null;
+  peekAvatarIcon: string | null;
+};
+
+type PeekIdentity = {
+  nickname: string;
+  avatar_icon: string;
 };
 
 function readMetaString(
@@ -39,21 +46,26 @@ function nameFromMetadata(meta: Record<string, unknown>): string | null {
 }
 
 export function getUserSummary(
-  user: User | null | undefined
+  user: User | null | undefined,
+  peek?: PeekIdentity | null
 ): AuthUserSummary | null {
   if (!user) return null;
 
   const meta = user.user_metadata ?? {};
   const name = nameFromMetadata(meta);
   const email = user.email ?? null;
-  const label =
-    name || nameFromEmail(email) || email || "?";
+  const peekNickname = peek?.nickname?.trim() || null;
+  const peekAvatarIcon = peek?.avatar_icon?.trim() || null;
+  const fallbackLabel =
+    peekNickname || name || nameFromEmail(email) || email || "?";
 
   return {
     name,
     email,
     avatarUrl: null,
-    initials: label.charAt(0).toUpperCase()
+    initials: fallbackLabel.charAt(0).toUpperCase(),
+    peekNickname,
+    peekAvatarIcon
   };
 }
 
@@ -70,20 +82,19 @@ export function nameFromEmail(email: string | null | undefined): string | null {
   return firstPart.charAt(0).toUpperCase() + firstPart.slice(1).toLowerCase();
 }
 
-/** שם פרטי לברכה — קודם Google, רק אז גיבוי מהמייל */
-export function getFirstName(user: AuthUserSummary | null): string | null {
-  if (!user) return null;
-
-  if (user.name) {
-    const first = user.name.split(/\s+/)[0]?.trim();
-    if (first) return first;
-  }
-
-  return nameFromEmail(user.email);
+/** How Peek addresses you — always your anonymous nickname, never real name. */
+export function getPeekDisplayName(user: AuthUserSummary | null): string {
+  if (!user) return "Your Peek";
+  return user.peekNickname?.trim() || "Your Peek";
 }
 
-/** שם מלא לתצוגה — קודם Google, רק אז גיבוי מהמייל */
+/** @deprecated Use getPeekDisplayName — real names are not shown in the app UI. */
+export function getFirstName(user: AuthUserSummary | null): string | null {
+  return getPeekDisplayName(user);
+}
+
+/** @deprecated Use getPeekDisplayName — real names are not shown in the app UI. */
 export function getDisplayName(user: AuthUserSummary | null): string | null {
   if (!user) return null;
-  return user.name?.trim() || nameFromEmail(user.email);
+  return getPeekDisplayName(user);
 }

@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { getFirstName } from "@/lib/auth-user";
+import { getPeekDisplayName } from "@/lib/auth-user";
 import type { AuthUserSummary } from "@/lib/auth-user";
 import {
   REQUEST_STATUS_LABELS,
   REQUEST_STATUS_STYLES
 } from "@/lib/request-status-labels";
 import type { DashboardSummary } from "@/lib/supabase/dashboard";
+import { UserAvatarIcon } from "@/components/user-avatar-icon";
 
 type HomeDashboardProps = {
   user: AuthUserSummary;
@@ -17,50 +18,65 @@ const actions = [
     href: "/post-request",
     emoji: "📝",
     title: "Post a request",
-    description: "Need eyes somewhere? Ask a Peek.",
-    cardClass: "border-orange-100 bg-orange-50/60 hover:bg-orange-50",
-    iconBg: "bg-white/80 text-orange-700"
+    description: "Need eyes somewhere? Ask kindly.",
+    cardClass:
+      "border-orange-100 bg-gradient-to-br from-orange-50/90 to-amber-50/50 hover:from-orange-50 hover:to-amber-50",
+    iconBg: "bg-white/90 text-orange-700"
   },
   {
     href: "/requests",
     emoji: "🔍",
     title: "Find work",
-    description: "Grab a task nearby, earn stars.",
-    cardClass: "border-sky-200 bg-sky-50/70 hover:bg-sky-50",
-    iconBg: "bg-white/80 text-sky-800"
+    description: "Grab a task nearby, earn stars ⭐",
+    cardClass:
+      "border-sky-200 bg-gradient-to-br from-sky-50/90 to-cyan-50/40 hover:from-sky-50 hover:to-cyan-50",
+    iconBg: "bg-white/90 text-sky-800"
   },
   {
     href: "/my-requests",
     emoji: "📋",
     title: "My requests",
     description: "Track your posts and answers.",
-    cardClass: "border-violet-100 bg-violet-50/50 hover:bg-violet-50/70",
-    iconBg: "bg-white/80 text-violet-700"
+    cardClass:
+      "border-violet-100 bg-gradient-to-br from-violet-50/70 to-fuchsia-50/30 hover:from-violet-50 hover:to-fuchsia-50/40",
+    iconBg: "bg-white/90 text-violet-700"
   },
   {
     href: "/profile",
     emoji: "⭐",
     title: "Your profile",
-    description: "Stars, nickname, settings.",
-    cardClass: "border-stone-200 bg-stone-50 hover:bg-stone-100/80",
-    iconBg: "bg-white/80 text-stone-700"
+    description: "Nickname, icon & star progress.",
+    cardClass:
+      "border-amber-100 bg-gradient-to-br from-amber-50/80 to-yellow-50/40 hover:from-amber-50 hover:to-yellow-50",
+    iconBg: "bg-white/90 text-amber-800"
   }
 ];
 
 export function HomeDashboard({ user, summary }: HomeDashboardProps) {
-  const firstName = getFirstName(user);
+  const peekName = getPeekDisplayName(user);
+  const avatarIcon = user.peekAvatarIcon ?? "✨";
 
   return (
     <div className="page-container space-y-10">
-      <section className="peek-fade-in overflow-hidden rounded-3xl border border-sky-200 bg-gradient-to-br from-sky-100/90 via-sky-50 to-white p-8 shadow-sm sm:p-10">
-        <p className="text-sm font-medium text-sky-800/80">Welcome back</p>
-        <h1 className="mt-2 text-3xl font-bold text-peek-text sm:text-4xl" dir="ltr">
-          {firstName ? `Hey, ${firstName}!` : "Welcome back!"}
-        </h1>
-        <p className="mt-3 max-w-lg text-body">
-          What would you like to do today — post something you need checked, or
-          help someone nearby as a Peek?
-        </p>
+      <section className="peek-fade-in overflow-hidden rounded-3xl border border-sky-200/80 bg-gradient-to-br from-sky-100 via-amber-50/80 to-pink-50/60 p-8 shadow-sm sm:p-10">
+        <div className="flex items-start gap-4">
+          <UserAvatarIcon icon={avatarIcon} size="lg" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-sky-800/80">
+              Good to see you again
+            </p>
+            <h1
+              className="mt-1 text-3xl font-bold text-peek-text sm:text-4xl"
+              dir="ltr"
+            >
+              Hey, {peekName}! ✨
+            </h1>
+            <p className="mt-3 max-w-lg text-body">
+              Ready to do a little good today? Post something you need checked,
+              or help someone nearby as a Peek.
+            </p>
+          </div>
+        </div>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -94,27 +110,27 @@ export function HomeDashboard({ user, summary }: HomeDashboardProps) {
       </section>
 
       <section className="grid gap-4 sm:grid-cols-3">
-        <article className="rounded-2xl border border-sky-100 bg-sky-50/50 p-6 shadow-sm">
+        <article className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50/80 to-white p-6 shadow-sm">
           <p className="text-sm text-peek-muted">Open jobs nearby</p>
           <p className="mt-2 text-3xl font-bold text-peek-primary">
             {summary.openJobsNearby}
           </p>
         </article>
-        <article className="rounded-2xl border border-violet-100 bg-violet-50/40 p-6 shadow-sm">
+        <article className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50/60 to-white p-6 shadow-sm">
           <p className="text-sm text-peek-muted">Your active requests</p>
           <p className="mt-2 text-3xl font-bold text-peek-text">
             {summary.myActiveRequests}
           </p>
         </article>
-        <article className="rounded-2xl border border-orange-100 bg-orange-50/40 p-6 shadow-sm">
-          <p className="text-sm text-peek-muted">Jobs you completed</p>
+        <article className="rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50/70 to-white p-6 shadow-sm">
+          <p className="text-sm text-peek-muted">Good deeds done</p>
           <p className="mt-2 text-3xl font-bold text-peek-text">
-            {summary.jobsCompletedAsPeek}
+            {summary.jobsCompletedAsPeek} ⭐
           </p>
         </article>
       </section>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <section className="rounded-2xl border border-zinc-200/80 bg-white/90 p-6 shadow-sm">
         <div className="flex items-center justify-between gap-4">
           <h2 className="heading-section text-lg">Your recent requests</h2>
           <Link
@@ -126,10 +142,13 @@ export function HomeDashboard({ user, summary }: HomeDashboardProps) {
         </div>
 
         {summary.recentRequests.length === 0 ? (
-          <div className="mt-6 rounded-2xl border-2 border-dashed border-sky-200 bg-sky-50/40 p-8 text-center">
-            <p className="font-semibold text-peek-text">No requests yet</p>
+          <div className="mt-6 rounded-2xl border-2 border-dashed border-sky-200 bg-gradient-to-br from-sky-50/60 to-amber-50/30 p-8 text-center">
+            <p className="text-2xl" aria-hidden>
+              🌻
+            </p>
+            <p className="mt-2 font-semibold text-peek-text">No requests yet</p>
             <p className="mt-1 text-sm text-peek-muted">
-              Post your first one — it only takes a minute.
+              Post your first one — it&apos;s free and only takes a minute.
             </p>
             <Link href="/post-request" className="btn-primary mt-5 inline-flex">
               Post a request
@@ -154,9 +173,6 @@ export function HomeDashboard({ user, summary }: HomeDashboardProps) {
                     </p>
                     <p className="text-sm text-peek-muted">{request.location}</p>
                   </div>
-                  <p className="text-sm font-semibold text-peek-primary">
-                    {REQUEST_STATUS_LABELS[request.status]}
-                  </p>
                 </Link>
               </li>
             ))}
