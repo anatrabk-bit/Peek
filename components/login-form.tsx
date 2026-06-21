@@ -43,7 +43,12 @@ export function LoginForm({ errorMessage, redirectTo }: LoginFormProps) {
         return;
       }
 
-      const nextPath = redirectTo?.startsWith("/") ? redirectTo : "/";
+      const nextPath = data.isNew
+        ? "/profile?setup=1"
+        : redirectTo?.startsWith("/")
+          ? redirectTo
+          : "/";
+
       router.push(nextPath);
       router.refresh();
     } catch {

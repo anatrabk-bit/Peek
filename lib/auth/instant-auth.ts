@@ -1,6 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { suggestDefaultAvatarIcon } from "@/lib/avatar-icons";
-import { suggestDefaultNickname } from "@/lib/nickname-suggestions";
+import { PENDING_PEEK_AVATAR_ICON } from "@/lib/avatar-icons";
 import {
   isDuplicateSignupError,
   normalizeSignupEmail,
@@ -20,22 +19,31 @@ export async function instantSignInOrUp(
   const email = normalizeSignupEmail(input.email);
   const phone = normalizeSignupPhone(input.phone);
 
-  let isNew = false;
-
-  const { data: created, error: createError } = await admin.auth.admin.createUser(
-    {
-      email,
-      email_confirm: true,
-      user_metadata: { phone }
-    }
+  const { data: existingUsers } = await admin.auth.admin.listUsers({
+    page: 1,
+    perPage: 1000
+  });
+  const alreadyRegistered = (existingUsers.users ?? []).some(
+    (user) => user.email?.toLowerCase() === email
   );
 
-  if (createError) {
-    if (!isDuplicateSignupError(createError.message)) {
-      return { error: createError.message };
+  let isNew = false;
+
+  if (!alreadyRegistered) {
+    const { data: created, error: createError } =
+      await admin.auth.admin.createUser({
+        email,
+        email_confirm: true,
+        user_metadata: { phone }
+      });
+
+    if (createError) {
+      if (!isDuplicateSignupError(createError.message)) {
+        return { error: createError.message };
+      }
+    } else if (created.user) {
+      isNew = true;
     }
-  } else if (created.user) {
-    isNew = true;
   }
 
   const { data: linkData, error: linkError } =
@@ -45,7 +53,7 @@ export async function instantSignInOrUp(
     });
 
   const tokenHash = linkData?.properties?.hashed_token;
-  const userId = linkData?.user?.id ?? created?.user?.id;
+  const userId = linkData?.user?.id;
 
   if (linkError || !tokenHash || !userId) {
     return {
@@ -81,8 +89,8 @@ export async function instantSignInOrUp(
   if (!existingProfile) {
     await admin.from("peek_profiles").insert({
       user_id: userId,
-      nickname: suggestDefaultNickname(userId),
-      avatar_icon: suggestDefaultAvatarIcon(userId)
+      nickname: null,
+      avatar_icon: PENDING_PEEK_AVATAR_ICON
     });
   }
 

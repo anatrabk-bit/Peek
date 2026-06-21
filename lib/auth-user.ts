@@ -1,4 +1,6 @@
 import type { User } from "@supabase/supabase-js";
+import { isUnsetAvatarIcon } from "@/lib/avatar-icons";
+import { hasChosenNickname } from "@/lib/nickname-suggestions";
 
 export type AuthUserSummary = {
   name: string | null;
@@ -10,7 +12,7 @@ export type AuthUserSummary = {
 };
 
 type PeekIdentity = {
-  nickname: string;
+  nickname: string | null;
   avatar_icon: string;
 };
 
@@ -54,8 +56,12 @@ export function getUserSummary(
   const meta = user.user_metadata ?? {};
   const name = nameFromMetadata(meta);
   const email = user.email ?? null;
-  const peekNickname = peek?.nickname?.trim() || null;
-  const peekAvatarIcon = peek?.avatar_icon?.trim() || null;
+  const peekNickname = hasChosenNickname(peek?.nickname)
+    ? peek!.nickname!.trim()
+    : null;
+  const rawAvatar = peek?.avatar_icon?.trim();
+  const peekAvatarIcon =
+    rawAvatar && !isUnsetAvatarIcon(rawAvatar) ? rawAvatar : null;
   const fallbackLabel =
     peekNickname || name || nameFromEmail(email) || email || "?";
 

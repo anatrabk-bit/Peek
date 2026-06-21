@@ -1,12 +1,12 @@
 import {
   isPeekAvatarIcon,
-  resolveAvatarIcon,
-  suggestDefaultAvatarIcon
+  isUnsetAvatarIcon,
+  PENDING_PEEK_AVATAR_ICON
 } from "@/lib/avatar-icons";
 import {
+  hasChosenNickname,
   normalizeNickname,
   shouldResetNickname,
-  suggestDefaultNickname,
   validateNickname
 } from "@/lib/nickname-suggestions";
 import { starsEarnedForJob, STARS_VOUCHER_THRESHOLD } from "@/lib/stars";
@@ -15,7 +15,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export type PeekProfile = {
   user_id: string;
-  nickname: string;
+  nickname: string | null;
   avatar_icon: string;
   peek_stars: number;
   vouchers_earned: number;
@@ -31,25 +31,27 @@ export type PublicPeekDisplay = {
   vouchersEarned: number;
 };
 
-function defaultNickname(userId: string): string {
-  return suggestDefaultNickname(userId);
+export function hasChosenPeekIdentity(profile: PeekProfile): boolean {
+  return (
+    hasChosenNickname(profile.nickname) &&
+    !isUnsetAvatarIcon(profile.avatar_icon)
+  );
 }
 
-function resolveNickname(userId: string, stored: string | null): string {
+function normalizeStoredNickname(stored: string | null): string | null {
   const trimmed = stored?.trim();
   if (!trimmed || shouldResetNickname(trimmed)) {
-    return defaultNickname(userId);
+    return null;
   }
   return trimmed;
 }
 
 async function fixStoredNicknameIfNeeded(
   userId: string,
-  stored: string | null,
-  resolved: string
+  stored: string | null
 ): Promise<void> {
   const trimmed = stored?.trim();
-  if (!trimmed || !shouldResetNickname(trimmed) || trimmed === resolved) {
+  if (!trimmed || !shouldResetNickname(trimmed)) {
     return;
   }
 
@@ -57,7 +59,7 @@ async function fixStoredNicknameIfNeeded(
   await supabase
     .from("peek_profiles")
     .update({
-      nickname: resolved,
+      nickname: null,
       updated_at: new Date().toISOString()
     })
     .eq("user_id", userId);
@@ -73,11 +75,22 @@ function mapProfile(row: {
 }): PeekProfile {
   return {
     user_id: row.user_id,
-    nickname: resolveNickname(row.user_id, row.nickname),
-    avatar_icon: resolveAvatarIcon(row.user_id, row.avatar_icon),
+    nickname: normalizeStoredNickname(row.nickname),
+    avatar_icon: row.avatar_icon,
     peek_stars: row.peek_stars,
     vouchers_earned: row.vouchers_earned,
     first_peek_bonus_claimed: row.first_peek_bonus_claimed
+  };
+}
+
+function emptyProfile(userId: string): PeekProfile {
+  return {
+    user_id: userId,
+    nickname: null,
+    avatar_icon: PENDING_PEEK_AVATAR_ICON,
+    peek_stars: 0,
+    vouchers_earned: 0,
+    first_peek_bonus_claimed: false
   };
 }
 
@@ -109,19 +122,12 @@ export async function getPeekProfile(
   }
 
   if (!data) {
-    return {
-      user_id: userId,
-      nickname: defaultNickname(userId),
-      avatar_icon: suggestDefaultAvatarIcon(userId),
-      peek_stars: 0,
-      vouchers_earned: 0,
-      first_peek_bonus_claimed: false
-    };
+    return emptyProfile(userId);
   }
 
   const profile = mapProfile(data);
   if (data.nickname && shouldResetNickname(data.nickname)) {
-    await fixStoredNicknameIfNeeded(userId, data.nickname, profile.nickname);
+    await fixStoredNicknameIfNeeded(userId, data.nickname);
   }
 
   return profile;
@@ -132,14 +138,7 @@ export async function getOrCreatePeekProfile(
 ): Promise<PeekProfile> {
   const existing = await getPeekProfile(userId);
   if (!existing) {
-    return {
-      user_id: userId,
-      nickname: defaultNickname(userId),
-      avatar_icon: suggestDefaultAvatarIcon(userId),
-      peek_stars: 0,
-      vouchers_earned: 0,
-      first_peek_bonus_claimed: false
-    };
+    return emptyProfile(userId);
   }
 
   const supabase = createClient();
@@ -152,8 +151,8 @@ export async function getOrCreatePeekProfile(
   if (!data) {
     await supabase.from("peek_profiles").insert({
       user_id: userId,
-      nickname: defaultNickname(userId),
-      avatar_icon: suggestDefaultAvatarIcon(userId)
+      nickname: null,
+      avatar_icon: PENDING_PEEK_AVATAR_ICON
     });
   }
 
@@ -168,13 +167,13 @@ export async function getPublicPeekDisplay(
     getPeekJobsCompleted(userId)
   ]);
 
-  if (!profile) {
+  if (!profile || !hasChosenPeekIdentity(profile)) {
     return null;
   }
 
   return {
     userId,
-    nickname: profile.nickname,
+    nickname: profile.nickname!,
     avatarIcon: profile.avatar_icon,
     jobsCompleted,
     peekStars: profile.peek_stars,
@@ -201,14 +200,18 @@ export async function updatePeekIdentity(input: {
     return { error: nicknameError };
   }
 
-  const avatarIcon = isPeekAvatarIcon(input.avatarIcon)
-    ? input.avatarIcon
-    : suggestDefaultAvatarIcon(user.id);
+  if (!input.avatarIcon.trim()) {
+    return { error: "Pick a profile icon." };
+  }
+
+  if (!isPeekAvatarIcon(input.avatarIcon)) {
+    return { error: "Pick one of the profile icons shown." };
+  }
 
   const { error } = await supabase.from("peek_profiles").upsert({
     user_id: user.id,
     nickname,
-    avatar_icon: avatarIcon,
+    avatar_icon: input.avatarIcon,
     updated_at: new Date().toISOString()
   });
 

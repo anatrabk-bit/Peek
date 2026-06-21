@@ -70,7 +70,7 @@ export function isLegacyAutoNickname(nickname: string): boolean {
 /** Stored nicknames we should replace with a fun suggestion (hyphens, old auto names, etc.). */
 export function shouldResetNickname(nickname: string): boolean {
   const trimmed = nickname.trim();
-  if (!trimmed) return true;
+  if (!trimmed) return false;
   if (isLegacyAutoNickname(trimmed)) return true;
   if (trimmed.includes("-")) return true;
 
@@ -88,6 +88,11 @@ export function shouldResetNickname(nickname: string): boolean {
   ]);
 
   return deprecated.has(normalized);
+}
+
+export function hasChosenNickname(nickname: string | null | undefined): boolean {
+  const trimmed = nickname?.trim();
+  return Boolean(trimmed && !shouldResetNickname(trimmed));
 }
 
 export function normalizeNickname(raw: string): string {

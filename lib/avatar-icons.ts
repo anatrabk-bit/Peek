@@ -42,6 +42,9 @@ export type PeekAvatarIcon = (typeof PEEK_AVATAR_OPTIONS)[number]["emoji"];
 
 export const DEFAULT_PEEK_AVATAR_ICON: PeekAvatarIcon = "🦊";
 
+/** Stored when the user has not picked an icon yet. */
+export const PENDING_PEEK_AVATAR_ICON = "pending";
+
 const LEGACY_AVATAR_ICONS = new Set([
   "🔵",
   "🟣",
@@ -77,6 +80,11 @@ export function isLegacyAvatarIcon(value: string): boolean {
   return LEGACY_AVATAR_ICONS.has(value);
 }
 
+export function isUnsetAvatarIcon(value: string | null | undefined): boolean {
+  const trimmed = value?.trim();
+  return !trimmed || trimmed === PENDING_PEEK_AVATAR_ICON || isLegacyAvatarIcon(trimmed);
+}
+
 export function getAvatarRingClass(emoji: string): string {
   return avatarOptionByEmoji.get(emoji)?.ring ?? PEEK_AVATAR_OPTIONS[0].ring;
 }
@@ -89,5 +97,13 @@ export function resolveAvatarIcon(
   if (trimmed && isPeekAvatarIcon(trimmed) && !isLegacyAvatarIcon(trimmed)) {
     return trimmed;
   }
+  if (isUnsetAvatarIcon(trimmed)) {
+    return DEFAULT_PEEK_AVATAR_ICON;
+  }
   return suggestDefaultAvatarIcon(userId);
+}
+
+/** For profile editing — null means nothing selected yet. */
+export function avatarIconForForm(stored: string | null | undefined): string {
+  return isUnsetAvatarIcon(stored) ? "" : (stored?.trim() ?? "");
 }

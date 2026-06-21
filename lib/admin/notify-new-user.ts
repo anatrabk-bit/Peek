@@ -6,22 +6,34 @@ type NotifyNewUserInput = {
   userId: string;
 };
 
+type NotifyResult = {
+  sent: boolean;
+  reason?: string;
+};
+
+/** Resend free tier: send from onboarding@resend.dev to your Resend account email. */
+const RESEND_FROM = "Peek <onboarding@resend.dev>";
+
+export function isAdminNotifyConfigured(): boolean {
+  return Boolean(
+    process.env.ADMIN_EMAIL?.trim() && process.env.RESEND_API_KEY?.trim()
+  );
+}
+
 export async function notifyAdminNewUser(
   input: NotifyNewUserInput
-): Promise<{ sent: boolean; reason?: string }> {
+): Promise<NotifyResult> {
   const adminEmail = process.env.ADMIN_EMAIL?.trim();
   const resendKey = process.env.RESEND_API_KEY?.trim();
 
   if (!adminEmail) {
-    return { sent: false, reason: "ADMIN_EMAIL is not configured." };
+    return { sent: false, reason: "ADMIN_EMAIL is not configured in Vercel." };
   }
 
   if (!resendKey) {
-    return { sent: false, reason: "RESEND_API_KEY is not configured." };
+    return { sent: false, reason: "RESEND_API_KEY is not configured in Vercel." };
   }
 
-  const fromEmail =
-    process.env.NOTIFY_FROM_EMAIL?.trim() ?? "Peek <onboarding@resend.dev>";
   const joinedAt = new Date().toLocaleString("en-GB", {
     day: "numeric",
     month: "short",
@@ -39,8 +51,8 @@ export async function notifyAdminNewUser(
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      from: fromEmail,
-      to: adminEmail,
+      from: RESEND_FROM,
+      to: [adminEmail],
       subject: `New Peek signup: ${input.email}`,
       html: `
         <h2>New user joined Peek</h2>
@@ -56,9 +68,18 @@ export async function notifyAdminNewUser(
   });
 
   if (!response.ok) {
-    const detail = await response.text();
+    let detail = await response.text();
+    try {
+      const parsed = JSON.parse(detail) as { message?: string };
+      detail = parsed.message ?? detail;
+    } catch {
+      // keep raw text
+    }
     console.error("[Peek] Admin new-user email failed:", detail);
-    return { sent: false, reason: "Email provider rejected the message." };
+    return {
+      sent: false,
+      reason: `Resend error: ${detail.slice(0, 200)}`
+    };
   }
 
   return { sent: true };
