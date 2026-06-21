@@ -1,25 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 
 const STORAGE_KEY = "peek-welcome-tour-done";
 
 const STEPS = [
   {
-    emoji: "👋",
-    title: "Welcome to Peek",
-    body: "Need a quick check somewhere nearby? Ask a Peek — open hours, stock, photos, and more. Posting a request is free."
+    emoji: "👀",
+    badgeClass: "peek-icon-badge-sky",
+    title: "Quick checks, nearby",
+    lines: ["Open hours · stock · photos", "Free to post — ask in seconds"]
   },
   {
     emoji: "🗺️",
-    title: "Two ways to join in",
-    body: "Post a request when you need help, or browse Help nearby and tap \"I'm on it\" when you're close enough to check."
+    badgeClass: "peek-icon-badge-emerald",
+    title: "Two simple paths",
+    cards: [
+      { label: "Post a request", hint: "When you need an answer" },
+      { label: "Help nearby", hint: "Tap I'm on it when you're close" }
+    ]
   },
   {
     emoji: "⭐",
+    badgeClass: "peek-icon-badge-amber",
     title: "Stars & privacy",
-    body: "Peeks earn stars — not money. You pick a fun nickname and icon; nobody sees your real name or email."
+    lines: ["Peeks earn stars — not money", "Pick a nickname · no real names"]
   }
 ] as const;
 
@@ -53,71 +58,107 @@ export function OnboardingTour() {
 
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
+  const progress = ((step + 1) / STEPS.length) * 100;
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 p-4 sm:items-center"
+      className="fixed inset-0 z-[100] flex items-end justify-center bg-stone-900/35 p-4 backdrop-blur-[2px] sm:items-center sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="onboarding-title"
+      onClick={finish}
     >
-      <div className="w-full max-w-md rounded-2xl border border-peek-border bg-peek-surface p-6 shadow-card">
-        <div className="flex items-start gap-4">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-2xl">
-            {current.emoji}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold uppercase tracking-wide text-peek-muted">
-              {step + 1} of {STEPS.length}
-            </p>
-            <h2
-              id="onboarding-title"
-              className="mt-1 text-xl font-bold text-peek-text"
-            >
-              {current.title}
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-peek-muted">
-              {current.body}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-5 flex items-center justify-center gap-2">
-          {STEPS.map((_, index) => (
-            <span
-              key={index}
-              className={`h-2 w-2 rounded-full transition ${
-                index === step ? "bg-peek-primary" : "bg-zinc-200"
-              }`}
-              aria-hidden
-            />
-          ))}
-        </div>
-
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={handleNext}
-            className="btn-primary flex-1 sm:flex-none"
-          >
-            {isLast ? "Got it" : "Next"}
-          </button>
+      <div
+        className="peek-fade-in w-full max-w-sm overflow-hidden rounded-3xl border border-white/80 bg-peek-surface shadow-[0_24px_60px_-12px_rgba(2,132,199,0.25)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="relative overflow-hidden bg-gradient-to-br from-sky-600 to-cyan-700 px-6 pb-8 pt-5 text-white">
+          <div className="peek-blob peek-blob-a opacity-40" aria-hidden />
           <button
             type="button"
             onClick={finish}
-            className="text-sm font-semibold text-peek-muted transition hover:text-peek-text"
+            className="absolute right-4 top-4 rounded-full p-1.5 text-sky-100 transition hover:bg-white/15 hover:text-white"
+            aria-label="Skip intro"
           >
-            Skip
-          </button>
-          {isLast && (
-            <Link
-              href="/post-request"
-              onClick={finish}
-              className="ml-auto text-sm font-semibold text-peek-primary hover:underline"
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden
             >
-              Post a request →
-            </Link>
-          )}
+              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+            </svg>
+          </button>
+
+          <p className="text-xs font-semibold uppercase tracking-widest text-sky-100/90">
+            {step + 1} / {STEPS.length}
+          </p>
+
+          <div
+            key={step}
+            className="relative mt-5 peek-fade-in"
+          >
+            <div
+              className={`peek-icon-badge mb-4 ${current.badgeClass} !h-14 !w-14 !rounded-2xl !text-3xl`}
+            >
+              {current.emoji}
+            </div>
+            <h2
+              id="onboarding-title"
+              className="text-2xl font-bold tracking-tight text-white"
+            >
+              {current.title}
+            </h2>
+          </div>
+
+          <div className="relative mt-5 h-1 overflow-hidden rounded-full bg-white/20">
+            <div
+              className="h-full rounded-full bg-white transition-all duration-300 ease-out"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+
+        <div key={`body-${step}`} className="space-y-4 px-6 py-5 peek-fade-in">
+          {"lines" in current &&
+            current.lines.map((line) => (
+              <p
+                key={line}
+                className="text-sm leading-relaxed text-peek-muted"
+              >
+                {line}
+              </p>
+            ))}
+
+          {"cards" in current &&
+            current.cards.map((card) => (
+              <div
+                key={card.label}
+                className="rounded-2xl border border-zinc-100 bg-peek-warm px-4 py-3"
+              >
+                <p className="font-semibold text-peek-text">{card.label}</p>
+                <p className="mt-0.5 text-sm text-peek-muted">{card.hint}</p>
+              </div>
+            ))}
+
+          <div className="flex items-center gap-3 pt-1">
+            <button
+              type="button"
+              onClick={handleNext}
+              className="btn-primary flex-1 justify-center py-2.5"
+            >
+              {isLast ? "Start exploring" : "Next"}
+            </button>
+            {!isLast && (
+              <button
+                type="button"
+                onClick={finish}
+                className="shrink-0 px-2 text-sm font-semibold text-peek-muted transition hover:text-peek-text"
+              >
+                Skip
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
