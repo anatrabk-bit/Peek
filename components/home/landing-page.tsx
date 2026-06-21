@@ -1,12 +1,18 @@
 import Link from "next/link";
 
+const examples = [
+  "Is Pret on High Street open right now?",
+  "Do they still have the Cronut at Paul on King's Road?",
+  "How long is the queue outside the post office?"
+];
+
 const steps = [
   {
     emoji: "✍️",
     badgeClass: "peek-icon-badge-sky",
     title: "Post what you need checked",
     description:
-      "Say the place and the question — open hours, stock, queue, or a photo."
+      "Say the place and the question - open hours, stock, queue, or how busy it is."
   },
   {
     emoji: "📍",
@@ -36,13 +42,13 @@ export function LandingPage() {
             <p className="inline-block rounded-full bg-white/15 px-4 py-1.5 text-sm font-medium">
               Quick checks from people already there
             </p>
-            <h1 className="heading-hero text-white text-balance">
-              Ask someone nearby to check — without going yourself
+            <h1 className="heading-hero text-balance text-white">
+              Ask someone nearby to check - without going yourself
             </h1>
             <p className="mx-auto max-w-2xl text-lg leading-relaxed text-sky-100">
               Peek matches you with someone at the place you care about. They
-              confirm what you need — a photo, stock, opening hours, or anything
-              quick — and you get the answer in minutes.
+              confirm what you need - stock, opening hours, queue, or anything
+              quick - and you get the answer in minutes.
             </p>
           </div>
 
@@ -50,7 +56,7 @@ export function LandingPage() {
             <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-sm">
               <p className="font-semibold text-white">Need an answer?</p>
               <p className="mt-1 text-sm leading-relaxed text-sky-100">
-                Post a request — free, no payment.
+                Post a request - free, no payment.
               </p>
             </div>
             <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-sm">
@@ -87,7 +93,7 @@ export function LandingPage() {
           <div className="mb-10 text-center peek-fade-in peek-delay-1">
             <h2 className="heading-section">How Peek works</h2>
             <p className="mt-2 text-body">
-              Three steps — whether you need help or want to help.
+              Three steps - whether you need help or want to help.
             </p>
           </div>
 
@@ -117,24 +123,14 @@ export function LandingPage() {
         <div className="card-static mx-auto max-w-2xl peek-fade-in peek-delay-5">
           <h2 className="heading-section text-center">What can you ask?</h2>
           <ul className="mt-4 space-y-2 text-body">
-            <li className="flex gap-2">
-              <span className="text-peek-primary" aria-hidden>
-                ·
-              </span>
-              Is this café open right now?
-            </li>
-            <li className="flex gap-2">
-              <span className="text-peek-primary" aria-hidden>
-                ·
-              </span>
-              Is this item still in stock on the shelf?
-            </li>
-            <li className="flex gap-2">
-              <span className="text-peek-primary" aria-hidden>
-                ·
-              </span>
-              Can you send a photo of the queue or the menu board?
-            </li>
+            {examples.map((example) => (
+              <li key={example} className="flex gap-2">
+                <span className="text-peek-primary" aria-hidden>
+                  ·
+                </span>
+                {example}
+              </li>
+            ))}
           </ul>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link href="/post-request" className="btn-primary btn-fun">
