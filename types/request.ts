@@ -1,6 +1,8 @@
+import type { TaskScheduleFields, TaskType } from "@/types/task-schedule";
+
 export type RequestStatus = "open" | "pending_approval" | "claimed" | "completed";
 
-export type MarketplaceRequest = {
+export type MarketplaceRequest = TaskScheduleFields & {
   id: string;
   title: string;
   location: string;

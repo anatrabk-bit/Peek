@@ -5,6 +5,7 @@ import {
   PlacesAutocomplete,
   type PlaceSelection
 } from "@/components/maps/places-autocomplete";
+import { TaskSchedulePicker } from "@/components/task-schedule-picker";
 import { createRequest } from "@/app/post-request/actions";
 
 export function PostRequestForm() {
@@ -63,6 +64,8 @@ export function PostRequestForm() {
           Peeks help because they&apos;re nearby — they earn stars, not money.
         </p>
       </div>
+
+      <TaskSchedulePicker disabled={isPending} />
 
       <div className="space-y-2">
         <label htmlFor="title" className="text-sm font-semibold text-peek-text">

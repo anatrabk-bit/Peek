@@ -1,6 +1,8 @@
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { formatTaskSchedule } from "@/lib/task-schedule";
 import type { RequestStatus } from "@/types/request";
+import type { ScheduleMode, TaskType } from "@/types/task-schedule";
 
 export type AdminRequestRow = {
   id: string;
@@ -9,6 +11,10 @@ export type AdminRequestRow = {
   status: RequestStatus;
   budget: number;
   created_at: string;
+  task_type: TaskType;
+  schedule_mode: ScheduleMode | null;
+  scheduled_at: string | null;
+  schedule_label: string;
 };
 
 export type AdminUserRow = {
@@ -28,7 +34,9 @@ export async function getAdminRequests(): Promise<AdminRequestRow[]> {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("requests")
-    .select("id, title, location, status, budget, created_at")
+    .select(
+      "id, title, location, status, budget, created_at, task_type, schedule_mode, scheduled_at"
+    )
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -36,14 +44,27 @@ export async function getAdminRequests(): Promise<AdminRequestRow[]> {
     return [];
   }
 
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    title: row.title,
-    location: row.location,
-    status: row.status,
-    budget: Number(row.budget),
-    created_at: row.created_at
-  }));
+  return (data ?? []).map((row) => {
+    const taskType = (row.task_type as TaskType | null) ?? "untimed";
+    const scheduleMode = row.schedule_mode as ScheduleMode | null;
+
+    return {
+      id: row.id,
+      title: row.title,
+      location: row.location,
+      status: row.status,
+      budget: Number(row.budget),
+      created_at: row.created_at,
+      task_type: taskType,
+      schedule_mode: scheduleMode,
+      scheduled_at: row.scheduled_at ?? null,
+      schedule_label: formatTaskSchedule({
+        task_type: taskType,
+        schedule_mode: scheduleMode,
+        scheduled_at: row.scheduled_at ?? null
+      })
+    };
+  });
 }
 
 export async function getAdminUsers(): Promise<AdminUserRow[]> {

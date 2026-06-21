@@ -144,6 +144,7 @@ export function AdminPanel({ requests, users }: AdminPanelProps) {
             <thead>
               <tr className="border-b border-zinc-200 text-xs font-semibold uppercase tracking-wide text-peek-muted">
                 <th className="px-3 py-3">Title</th>
+                <th className="px-3 py-3">When</th>
                 <th className="px-3 py-3">Location</th>
                 <th className="px-3 py-3">Status</th>
                 <th className="px-3 py-3">Posted</th>
@@ -154,7 +155,7 @@ export function AdminPanel({ requests, users }: AdminPanelProps) {
               {requests.length === 0 && (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-3 py-8 text-center text-peek-muted"
                   >
                     No requests yet.
@@ -168,6 +169,9 @@ export function AdminPanel({ requests, users }: AdminPanelProps) {
                 >
                   <td className="px-3 py-4 font-medium text-peek-text">
                     {request.title}
+                  </td>
+                  <td className="px-3 py-4 text-peek-muted">
+                    {request.schedule_label}
                   </td>
                   <td className="px-3 py-4 text-peek-muted">
                     {request.location}

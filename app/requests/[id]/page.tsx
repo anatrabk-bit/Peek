@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { RequestActions } from "@/components/request-actions";
+import { TaskScheduleBadge } from "@/components/task-schedule-badge";
 import { UserProfilePreview } from "@/components/user-profile-preview";
 import { getPublicPeekDisplay } from "@/lib/supabase/peek-profile";
 import {
@@ -48,6 +49,9 @@ export default async function RequestDetailsPage({
         <span className="badge-open capitalize">
           {REQUEST_STATUS_LABELS[request.status]}
         </span>
+        <div className="mt-3">
+          <TaskScheduleBadge schedule={request} size="md" />
+        </div>
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-peek-text">
           {request.title}
         </h1>

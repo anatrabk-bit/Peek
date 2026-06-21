@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { TaskScheduleBadge } from "@/components/task-schedule-badge";
 import {
   REQUEST_STATUS_LABELS,
   REQUEST_STATUS_STYLES
@@ -70,6 +71,9 @@ export default async function MyRequestsPage({
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
+                    <div className="mb-2">
+                      <TaskScheduleBadge schedule={request} />
+                    </div>
                     <span
                       className={`inline-block rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
                         REQUEST_STATUS_STYLES[request.status]

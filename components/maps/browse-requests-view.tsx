@@ -18,6 +18,7 @@ const RequestsMap = dynamic(
 );
 import { getDistanceKm, hasValidCoordinates, type Coordinates } from "@/lib/geo";
 import { REQUEST_STATUS_LABELS } from "@/lib/request-status-labels";
+import { TaskScheduleBadge } from "@/components/task-schedule-badge";
 import type { MarketplaceRequest } from "@/types/request";
 
 type BrowseRequestsViewProps = {
@@ -129,6 +130,9 @@ export function BrowseRequestsView({
           <article key={request.id} className="card">
             <div className="flex items-start justify-between gap-4">
               <div>
+                <div className="mb-2">
+                  <TaskScheduleBadge schedule={request} />
+                </div>
                 <h3 className="text-lg font-semibold text-peek-text">
                   {request.title}
                 </h3>

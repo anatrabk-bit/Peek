@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { MarketplaceRequest, RequestResponse } from "@/types/request";
+import type { ScheduleMode, TaskType } from "@/types/task-schedule";
 
 type DbRequest = {
   id: string;
@@ -13,6 +14,9 @@ type DbRequest = {
   latitude?: number | null;
   longitude?: number | null;
   created_at?: string;
+  task_type?: TaskType | null;
+  schedule_mode?: ScheduleMode | null;
+  scheduled_at?: string | null;
 };
 
 export type OpenRequestsFetchResult = {
@@ -22,11 +26,13 @@ export type OpenRequestsFetchResult = {
 };
 
 const REQUEST_SELECT =
-  "id, title, location, budget, details, status, user_id, runner_id, latitude, longitude, created_at";
+  "id, title, location, budget, details, status, user_id, runner_id, latitude, longitude, created_at, task_type, schedule_mode, scheduled_at";
 
 const BASE_SELECT = "id, title, location, budget, details, status";
 
 function mapRequest(request: DbRequest): MarketplaceRequest {
+  const taskType = request.task_type ?? "untimed";
+
   return {
     id: request.id,
     title: request.title,
@@ -38,7 +44,12 @@ function mapRequest(request: DbRequest): MarketplaceRequest {
     runner_id: request.runner_id ?? null,
     created_at: request.created_at,
     latitude: request.latitude ?? null,
-    longitude: request.longitude ?? null
+    longitude: request.longitude ?? null,
+    task_type: taskType,
+    schedule_mode:
+      taskType === "scheduled" ? (request.schedule_mode ?? "live") : null,
+    scheduled_at:
+      taskType === "scheduled" ? (request.scheduled_at ?? null) : null
   };
 }
 
