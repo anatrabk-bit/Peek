@@ -6,7 +6,6 @@ import AuthStatus from "@/components/AuthStatus";
 import { NotificationBell } from "@/components/notification-bell";
 import { NotificationProvider } from "@/components/notifications/notification-provider";
 import { InstallAppPrompt } from "@/components/install-app-prompt";
-import { OnboardingTour } from "@/components/onboarding-tour";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { PwaRegister } from "@/components/pwa-register";
 import type { Metadata, Viewport } from "next";
@@ -148,7 +147,6 @@ export default async function RootLayout({
           notificationShell
         )}
         <InstallAppPrompt />
-        <OnboardingTour />
       </body>
     </html>
   );

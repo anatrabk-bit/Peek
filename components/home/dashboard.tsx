@@ -54,7 +54,7 @@ export function HomeDashboard({ user, summary }: HomeDashboardProps) {
         <div className="flex items-start gap-4">
           <UserAvatarIcon icon={avatarIcon} size="lg" />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-peek-muted">Welcome back</p>
+            <p className="text-sm font-medium text-peek-muted">Your home on Peek</p>
             <h1
               className="mt-1 text-2xl font-bold text-peek-text sm:text-3xl"
               dir="ltr"
@@ -62,8 +62,8 @@ export function HomeDashboard({ user, summary }: HomeDashboardProps) {
               Hey, {peekName}
             </h1>
             <p className="mt-2 text-body">
-              Post a request or grab a nearby task — whatever you feel like
-              today.
+              Post when you need someone to check a place for you — or pick up a
+              nearby task and earn stars.
             </p>
           </div>
         </div>

@@ -4,45 +4,64 @@ const steps = [
   {
     emoji: "✍️",
     badgeClass: "peek-icon-badge-sky",
-    title: "Describe what you need",
+    title: "Post what you need checked",
     description:
-      "Is the place open? Is the item in stock? Does it look like the photos? Just ask — it's free."
+      "Say the place and the question — open hours, stock, queue, or a photo."
   },
   {
     emoji: "📍",
     badgeClass: "peek-icon-badge-emerald",
-    title: "A nearby Peek checks for you",
+    title: "A nearby Peek goes and looks",
     description:
-      "Someone already there confirms what you need — with photos if you want."
+      "Someone already there taps I'm on it, checks, and sends you the answer."
   },
   {
     emoji: "⭐",
     badgeClass: "peek-icon-badge-amber",
-    title: "Everyone wins",
+    title: "You get the answer. They earn stars.",
     description:
-      "You get your answer. Peeks earn stars for helping out — no money involved."
+      "Free to post. Peeks collect stars (not money). Everyone stays anonymous."
   }
 ];
 
 export function LandingPage() {
   return (
     <>
-      <section className="peek-hero relative overflow-hidden px-6 py-16 text-white sm:py-24">
+      <section className="peek-hero relative overflow-hidden px-6 py-14 text-white sm:py-20">
         <div className="peek-blob peek-blob-a" aria-hidden />
         <div className="peek-blob peek-blob-b" aria-hidden />
 
-        <div className="relative mx-auto max-w-3xl space-y-6 text-center peek-fade-in">
-          <p className="inline-block rounded-full bg-white/15 px-4 py-1.5 text-sm font-medium">
-            Real people · real places · real answers
-          </p>
-          <h1 className="heading-hero text-white">
-            Skip the trip. Ask a Peek.
-          </h1>
-          <p className="mx-auto max-w-xl text-lg leading-relaxed text-sky-100">
-            Get a quick check from someone nearby — or help out and earn stars.
-            Free to post, anonymous, and friendly.
-          </p>
-          <div className="mx-auto flex max-w-md flex-col gap-3 pt-2 sm:max-w-lg sm:flex-row sm:justify-center">
+        <div className="relative mx-auto max-w-3xl space-y-8 text-center peek-fade-in">
+          <div className="space-y-4">
+            <p className="inline-block rounded-full bg-white/15 px-4 py-1.5 text-sm font-medium">
+              Quick checks from people already there
+            </p>
+            <h1 className="heading-hero text-white text-balance">
+              Ask someone nearby to check — without going yourself
+            </h1>
+            <p className="mx-auto max-w-2xl text-lg leading-relaxed text-sky-100">
+              Peek matches you with someone at the place you care about. They
+              confirm what you need — a photo, stock, opening hours, or anything
+              quick — and you get the answer in minutes.
+            </p>
+          </div>
+
+          <div className="mx-auto grid max-w-lg gap-3 text-left sm:max-w-2xl sm:grid-cols-2">
+            <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-sm">
+              <p className="font-semibold text-white">Need an answer?</p>
+              <p className="mt-1 text-sm leading-relaxed text-sky-100">
+                Post a request — free, no payment.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-4 backdrop-blur-sm">
+              <p className="font-semibold text-white">Already nearby?</p>
+              <p className="mt-1 text-sm leading-relaxed text-sky-100">
+                Browse tasks, tap I&apos;m on it, earn stars.
+              </p>
+            </div>
+          </div>
+
+          <div className="mx-auto flex max-w-md flex-col gap-3 sm:max-w-lg sm:flex-row sm:justify-center">
             <Link
               href="/post-request"
               className="btn-primary btn-fun flex-1 justify-center px-5 py-3"
@@ -53,21 +72,22 @@ export function LandingPage() {
               href="/requests"
               className="btn-hero-outline btn-fun flex-1 justify-center px-5 py-3"
             >
-              Help as a Peek
+              Help nearby
             </Link>
           </div>
+
           <p className="text-sm text-sky-100/90">
-            Free · no payment · stay anonymous
+            Anonymous nicknames · no real names shown · free to post
           </p>
         </div>
       </section>
 
-      <section className="px-6 py-14 sm:py-18">
+      <section className="px-6 py-14 sm:py-16">
         <div className="mx-auto max-w-5xl">
           <div className="mb-10 text-center peek-fade-in peek-delay-1">
-            <h2 className="heading-section">How it works</h2>
+            <h2 className="heading-section">How Peek works</h2>
             <p className="mt-2 text-body">
-              Three simple steps — clear for everyone.
+              Three steps — whether you need help or want to help.
             </p>
           </div>
 
@@ -94,13 +114,29 @@ export function LandingPage() {
       </section>
 
       <section className="px-6 pb-16">
-        <div className="card-static mx-auto max-w-2xl text-center peek-fade-in peek-delay-5">
-          <h2 className="heading-section">Ready to try it?</h2>
-          <p className="mt-3 text-body">
-            Post when you need eyes somewhere you can&apos;t be, or browse open
-            tasks when you want to help nearby.
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <div className="card-static mx-auto max-w-2xl peek-fade-in peek-delay-5">
+          <h2 className="heading-section text-center">What can you ask?</h2>
+          <ul className="mt-4 space-y-2 text-body">
+            <li className="flex gap-2">
+              <span className="text-peek-primary" aria-hidden>
+                ·
+              </span>
+              Is this café open right now?
+            </li>
+            <li className="flex gap-2">
+              <span className="text-peek-primary" aria-hidden>
+                ·
+              </span>
+              Is this item still in stock on the shelf?
+            </li>
+            <li className="flex gap-2">
+              <span className="text-peek-primary" aria-hidden>
+                ·
+              </span>
+              Can you send a photo of the queue or the menu board?
+            </li>
+          </ul>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link href="/post-request" className="btn-primary btn-fun">
               Post a request
             </Link>
