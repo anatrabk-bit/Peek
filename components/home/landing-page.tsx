@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FounderNote } from "@/components/home/founder-note";
 
 const examples = [
   "Is Pret on High Street open right now?",
@@ -139,6 +140,12 @@ export function LandingPage() {
               Join Peek
             </Link>
           </div>
+        </div>
+      </section>
+
+      <section className="border-t border-peek-border bg-peek-warm px-6 py-14 sm:py-16">
+        <div className="mx-auto max-w-2xl">
+          <FounderNote />
         </div>
       </section>
     </>
