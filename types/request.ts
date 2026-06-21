@@ -1,5 +1,3 @@
-import type { PaymentRecord } from "@/types/payment";
-
 export type RequestStatus = "open" | "pending_approval" | "claimed" | "completed";
 
 export type MarketplaceRequest = {
@@ -14,7 +12,6 @@ export type MarketplaceRequest = {
   latitude?: number | null;
   longitude?: number | null;
   created_at?: string;
-  payment?: PaymentRecord | null;
 };
 
 export type RequestResponse = {
