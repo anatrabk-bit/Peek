@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { FounderNote } from "@/components/home/founder-note";
 import { getPeekDisplayName } from "@/lib/auth-user";
 import type { AuthUserSummary } from "@/lib/auth-user";
 import {
@@ -163,10 +162,6 @@ export function HomeDashboard({ user, summary }: HomeDashboardProps) {
             ))}
           </ul>
         )}
-      </section>
-
-      <section className="pt-4">
-        <FounderNote />
       </section>
     </div>
   );
