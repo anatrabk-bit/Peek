@@ -45,10 +45,9 @@ export function LandingPage() {
             <h1 className="heading-hero text-balance text-white">
               Ask someone nearby to check - without going yourself
             </h1>
-            <p className="mx-auto max-w-2xl text-lg leading-relaxed text-sky-100">
-              Peek matches you with someone at the place you care about. They
-              confirm what you need - stock, opening hours, queue, or anything
-              quick - and you get the answer in minutes.
+            <p className="mx-auto max-w-xl text-lg leading-relaxed text-sky-100">
+              Someone&apos;s already there. They check what you need - open,
+              in stock, or how long the queue is - and reply in minutes.
             </p>
           </div>
 
