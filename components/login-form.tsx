@@ -95,7 +95,7 @@ export function LoginForm({ errorMessage, redirectTo }: LoginFormProps) {
           className="input-field"
         />
         <p className="text-xs text-peek-muted">
-          Private — only used to reach you about your requests.
+          Private. Only used to reach you about your requests.
         </p>
       </div>
 

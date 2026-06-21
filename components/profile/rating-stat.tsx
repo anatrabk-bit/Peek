@@ -30,7 +30,7 @@ export function RatingStat({
         </>
       ) : (
         <>
-          <p className="mt-2 text-3xl font-bold text-peek-text">—</p>
+          <p className="mt-2 text-3xl font-bold text-peek-text">-</p>
           <p className="mt-1 text-sm text-peek-muted">{emptyLabel}</p>
         </>
       )}

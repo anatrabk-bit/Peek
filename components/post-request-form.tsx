@@ -61,7 +61,9 @@ export function PostRequestForm() {
       <div className="peek-callout-success">
         <p className="font-semibold">Free to post</p>
         <p className="mt-1 leading-relaxed">
-          Peeks help because they&apos;re nearby — they earn stars, not money.
+          Peeks help because they&apos;re nearby.
+          <br />
+          They earn stars, not money.
         </p>
       </div>
 

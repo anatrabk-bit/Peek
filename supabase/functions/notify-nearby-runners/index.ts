@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
           request_id,
           event: "new_request_nearby",
           title: "New job nearby",
-          body: `"${title}" is open — apply if you're nearby.`,
+          body: `"${title}" is open. Apply if you're nearby.`,
           url: `/requests/${request_id}`
         });
       } catch (insertError) {

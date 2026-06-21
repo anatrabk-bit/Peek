@@ -49,7 +49,7 @@ export async function createRequest(formData: FormData) {
   }
 
   if (!taskType) {
-    return { error: "Choose when this should be checked — scheduled or anytime." };
+    return { error: "Choose when this should be checked: scheduled or anytime." };
   }
 
   if (Number.isNaN(latitude) || Number.isNaN(longitude)) {

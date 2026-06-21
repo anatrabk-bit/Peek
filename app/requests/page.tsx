@@ -10,10 +10,11 @@ export default async function BrowseRequestsPage() {
         <h1 className="heading-section text-3xl sm:text-4xl">
           Open tasks nearby
         </h1>
-        <p className="mt-3 text-body">
-          Already there? Grab a quick check, earn stars, and help someone out —
-          all anonymously.
-        </p>
+        <div className="mt-3 space-y-1 text-body">
+          <p>Already there?</p>
+          <p>Grab a quick check, earn stars, and help someone out.</p>
+          <p>All anonymously.</p>
+        </div>
       </div>
 
       <BrowseRequestsView requests={requests} fetchError={fetchError} />

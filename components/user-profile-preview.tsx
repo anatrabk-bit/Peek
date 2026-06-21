@@ -34,7 +34,7 @@ export function UserProfilePreview({
         </p>
         <p className="mt-1 text-xs text-peek-muted">
           {display.jobsCompleted === 0
-            ? "New Peek — no tasks yet"
+            ? "New Peek. No tasks yet"
             : `${display.jobsCompleted} task${
                 display.jobsCompleted === 1 ? "" : "s"
               } completed`}

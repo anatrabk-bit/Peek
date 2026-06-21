@@ -20,9 +20,9 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
       ? "Open the link in the same browser where you requested it (not the Gmail app)."
       : searchParams.error === "auth" || searchParams.error === "auth_failed"
         ? (searchParams.message ??
-          "That link didn't work — try again or use Dev sign-in below.")
+          "That link didn't work. Try again or use Dev sign-in below.")
         : searchParams.error === "missing_code"
-          ? "That sign-in link was incomplete — request a new one."
+          ? "That sign-in link was incomplete. Request a new one."
           : searchParams.error === "missing_email"
             ? "Enter your email first."
             : null);
@@ -40,8 +40,9 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
           <div>
             <h1 className="heading-section text-3xl">Join Peek</h1>
             <p className="mx-auto mt-3 max-w-sm text-body">
-              Help nearby or ask for a quick check. You stay anonymous with a
-              nickname — never your real name.
+              Help nearby or ask for a quick check.
+              <br />
+              You stay anonymous with a nickname, never your real name.
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-2">
@@ -65,7 +66,9 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
               Create your account
             </h2>
             <p className="mt-1 text-sm text-peek-muted">
-              Email and phone — you&apos;re in instantly. No email link needed.
+              Email and phone. You&apos;re in instantly.
+              <br />
+              No email link needed.
             </p>
           </div>
           <LoginForm

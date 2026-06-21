@@ -73,7 +73,7 @@ export async function claimRequest(requestId: string) {
   if (existing?.user_id === user.id) {
     return {
       ok: false as const,
-      error: "You can't claim your own request — ask another Peek to help."
+      error: "You can't claim your own request. Ask another Peek to help."
     };
   }
 

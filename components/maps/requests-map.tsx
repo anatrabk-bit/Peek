@@ -159,9 +159,10 @@ export function RequestsMap({ requests, userLocation }: RequestsMapProps) {
       </GoogleMap>
 
       {userLocation && (
-        <p className="border-t border-zinc-100 bg-white px-4 py-2 text-center text-xs text-peek-muted">
-          Blue dot is you — map centered on your location
-        </p>
+        <div className="space-y-0.5 border-t border-zinc-100 bg-white px-4 py-2 text-center text-xs text-peek-muted">
+          <p>Blue dot is you.</p>
+          <p>Map centered on your location.</p>
+        </div>
       )}
     </div>
   );

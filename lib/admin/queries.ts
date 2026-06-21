@@ -116,7 +116,7 @@ export async function getAdminUsers(): Promise<AdminUserRow[]> {
 
       return {
         id: user.id,
-        email: user.email ?? "—",
+        email: user.email ?? "-",
         phone,
         nickname: profilesByUserId.get(user.id)?.nickname ?? null,
         created_at: user.created_at

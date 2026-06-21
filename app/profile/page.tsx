@@ -48,7 +48,7 @@ export default async function UserProfilePage({
         </h1>
         <p className="mt-3 text-body">
           {setupMode
-            ? "Before you explore, pick a nickname and icon — we won't choose for you."
+            ? "Before you explore, pick a nickname and icon. We won't choose for you."
             : "Your nickname, icon, and stars. Nobody sees your real name or email."}
         </p>
       </div>
@@ -80,7 +80,7 @@ export default async function UserProfilePage({
                     {profile.nickname}
                   </p>
                   <p className="truncate text-sm text-peek-muted">
-                    Your Peek name — shown everywhere on the site
+                    Your Peek name. Shown everywhere on the site.
                   </p>
                 </div>
               </>

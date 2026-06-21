@@ -68,10 +68,10 @@ export function RunnerSettingsPanel({ isLoggedIn }: RunnerSettingsPanelProps) {
             Update location
           </button>
         </div>
-        <p className="text-sm text-peek-muted">
-          Used only for proximity notifications — not for filtering the browse
-          map.
-        </p>
+        <div className="space-y-1 text-sm text-peek-muted">
+          <p>Used only for proximity notifications.</p>
+          <p>Not for filtering the browse map.</p>
+        </div>
       </div>
 
       <div className="space-y-3">

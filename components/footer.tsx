@@ -14,10 +14,10 @@ export function Footer({ className }: FooterProps) {
           <Link href="/" className="text-xl font-bold text-peek-primary">
             Peek
           </Link>
-          <p className="mt-2 max-w-xs text-sm leading-relaxed text-peek-muted">
-            When you can&apos;t be there, someone nearby can help — anonymously
-            and for free.
-          </p>
+          <div className="mt-2 max-w-xs space-y-1 text-sm leading-relaxed text-peek-muted">
+            <p>When you can&apos;t be there, someone nearby can help.</p>
+            <p>Anonymous and free.</p>
+          </div>
         </div>
 
         <div className="flex gap-12 text-sm">

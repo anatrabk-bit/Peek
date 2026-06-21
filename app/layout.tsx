@@ -30,7 +30,7 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "Peek — Skip the trip. Spread a little good.",
+  title: "Peek - Skip the trip. Spread a little good.",
   description:
     "Ask someone nearby for a quick check, or help out and earn stars. Anonymous, friendly, free to post.",
   applicationName: "Peek",

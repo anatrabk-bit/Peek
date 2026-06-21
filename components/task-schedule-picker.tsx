@@ -35,9 +35,10 @@ export function TaskSchedulePicker({ disabled = false }: TaskSchedulePickerProps
         <p className="text-sm font-semibold text-peek-text">
           When should this be checked?
         </p>
-        <p className="text-xs text-peek-muted">
-          Start with whether you need a specific time — then add details below.
-        </p>
+        <div className="space-y-1 text-xs text-peek-muted">
+          <p>Start with whether you need a specific time.</p>
+          <p>Then add details below.</p>
+        </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <label
             className={`cursor-pointer rounded-2xl border-2 p-4 transition ${
@@ -59,10 +60,10 @@ export function TaskSchedulePicker({ disabled = false }: TaskSchedulePickerProps
             <p className="font-semibold text-peek-text">
               {TASK_TYPE_LABELS.scheduled}
             </p>
-            <p className="mt-1 text-sm text-peek-muted">
-              I need a check at a specific time — now, later today, or another
-              date.
-            </p>
+            <div className="mt-1 space-y-1 text-sm text-peek-muted">
+              <p>I need a check at a specific time.</p>
+              <p>Now, later today, or another date.</p>
+            </div>
           </label>
 
           <label
@@ -86,17 +87,17 @@ export function TaskSchedulePicker({ disabled = false }: TaskSchedulePickerProps
               {TASK_TYPE_LABELS.untimed}
             </p>
             <p className="mt-1 text-sm text-peek-muted">
-              No rush — a nearby Peek can check when it suits them.
+              No rush. A nearby Peek checks when it suits them.
             </p>
           </label>
         </div>
       </div>
 
       {taskType === "untimed" && (
-        <div className="peek-callout text-sm leading-relaxed">
-          <span className="font-semibold text-peek-text">Anytime</span> — no
-          deadline. Good for things like &quot;Is there a kids&apos; discount?&quot;
-          or &quot;Are dogs allowed?&quot;
+        <div className="peek-callout space-y-1 text-sm leading-relaxed">
+          <p className="font-semibold text-peek-text">Anytime. No deadline.</p>
+          <p>Good for: &quot;Kids under 5 free at the Science Museum?&quot;</p>
+          <p>Or: &quot;Are dogs allowed at the Paul on King&apos;s Road?&quot;</p>
         </div>
       )}
 

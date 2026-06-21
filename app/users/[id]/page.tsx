@@ -44,7 +44,7 @@ export default async function PublicUserPage({
           {isPeek ? "Peek" : "Requester"}
         </p>
         <p className="mt-3 text-body">
-          Anonymous profile — no real name is shown on Peek.
+          Anonymous profile. No real name is shown on Peek.
         </p>
       </div>
 

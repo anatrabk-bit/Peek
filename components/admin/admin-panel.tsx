@@ -77,7 +77,7 @@ export function AdminPanel({ requests, users }: AdminPanelProps) {
         <div>
           <h2 className="heading-section text-xl">New signups</h2>
           <p className="mt-1 text-sm text-peek-muted">
-            {users.length} user{users.length === 1 ? "" : "s"} — newest first.
+            {users.length} user{users.length === 1 ? "" : "s"}. Newest first.
             Phone comes from signup; nickname after they save their profile.
           </p>
         </div>
@@ -116,10 +116,10 @@ export function AdminPanel({ requests, users }: AdminPanelProps) {
                     {user.email}
                   </td>
                   <td className="px-3 py-4 text-peek-text" dir="ltr">
-                    {user.phone ?? "—"}
+                    {user.phone ?? "-"}
                   </td>
                   <td className="px-3 py-4 text-peek-text" dir="ltr">
-                    {user.nickname?.trim() || "—"}
+                    {user.nickname?.trim() || "-"}
                   </td>
                   <td className="px-3 py-4 font-mono text-xs text-peek-muted">
                     {user.id.slice(0, 8)}…
@@ -135,7 +135,7 @@ export function AdminPanel({ requests, users }: AdminPanelProps) {
         <div>
           <h2 className="heading-section text-xl">Requests</h2>
           <p className="mt-1 text-sm text-peek-muted">
-            {requests.length} total — change status or delete as needed.
+            {requests.length} total. Change status or delete as needed.
           </p>
         </div>
 

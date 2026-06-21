@@ -62,8 +62,9 @@ export function HomeDashboard({ user, summary }: HomeDashboardProps) {
               Hey, {peekName}
             </h1>
             <p className="mt-2 text-body">
-              Post when you need someone to check a place for you — or pick up a
-              nearby task and earn stars.
+              Post when you need someone to check a place for you.
+              <br />
+              Or pick up a nearby task and earn stars.
             </p>
           </div>
         </div>
@@ -133,7 +134,7 @@ export function HomeDashboard({ user, summary }: HomeDashboardProps) {
           <div className="mt-6 rounded-xl border border-dashed border-peek-border bg-stone-50 p-8 text-center">
             <p className="font-semibold text-peek-text">No requests yet</p>
             <p className="mt-1 text-sm text-peek-muted">
-              Post your first one — it only takes a minute.
+              Post your first one. It only takes a minute.
             </p>
             <Link href="/post-request" className="btn-primary mt-4 inline-flex">
               Post a request

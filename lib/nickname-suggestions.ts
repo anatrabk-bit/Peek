@@ -101,7 +101,7 @@ export function normalizeNickname(raw: string): string {
 
 export function validateNickname(raw: string): string | null {
   if (raw.trim().includes("-")) {
-    return "Use spaces between words — no hyphens (e.g. Day Maker, not Day-Maker).";
+    return "Use spaces between words, not hyphens (e.g. Day Maker, not Day-Maker).";
   }
 
   const nickname = normalizeNickname(raw);
@@ -115,7 +115,7 @@ export function validateNickname(raw: string): string | null {
   }
 
   if (!/^[a-zA-Z0-9][a-zA-Z0-9 ']*[a-zA-Z0-9]$/.test(nickname)) {
-    return "Use letters, numbers, and spaces — start and end with a letter or number.";
+    return "Use letters, numbers, and spaces. Start and end with a letter or number.";
   }
 
   return null;

@@ -34,7 +34,7 @@ export function validateSignupPhone(raw: string): string | null {
   const digits = phone.replace(/\D/g, "");
 
   if (digits.length < 7) {
-    return "Phone number is too short — use at least 7 digits.";
+    return "Phone number is too short. Use at least 7 digits.";
   }
 
   if (digits.length > 15) {

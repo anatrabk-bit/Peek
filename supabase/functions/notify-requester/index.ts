@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
         to: requesterEmail,
         subject: `Your Peek answer is ready: ${request.title}`,
         html: `
-          <p>Good news — a Peek finished your request <strong>${request.title}</strong>.</p>
+          <p>Good news. A Peek finished your request <strong>${request.title}</strong>.</p>
           <p><a href="${viewUrl}">View your answer on Peek</a></p>
           <p style="color:#666;font-size:14px;">Or open My requests in the app.</p>
         `

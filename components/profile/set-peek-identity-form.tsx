@@ -57,8 +57,8 @@ export function SetPeekIdentityForm({
       }
       setMessage(
         setupMode
-          ? "You're all set — welcome to Peek!"
-          : "Saved — this is how others see you on Peek."
+          ? "You're all set. Welcome to Peek!"
+          : "Saved. This is how others see you on Peek."
       );
       if (setupMode) {
         router.replace("/profile");
@@ -73,12 +73,20 @@ export function SetPeekIdentityForm({
         <h3 className="heading-section text-lg">
           {setupMode ? "Pick your Peek identity" : "Your anonymous identity"}
         </h3>
-        <p className="mt-2 text-sm text-peek-muted">
-          {setupMode
-            ? "Choose a fun nickname and icon — nothing is picked for you until you tap."
-            : "Others only see your nickname and icon — never your real name or email."}{" "}
-          Use spaces, not hyphens (e.g. Day Maker).
-        </p>
+        <div className="mt-2 space-y-1 text-sm text-peek-muted">
+          {setupMode ? (
+            <>
+              <p>Choose a fun nickname and icon.</p>
+              <p>Nothing is picked for you until you tap.</p>
+            </>
+          ) : (
+            <>
+              <p>Others only see your nickname and icon.</p>
+              <p>Never your real name or email.</p>
+            </>
+          )}
+          <p>Use spaces, not hyphens (e.g. Day Maker).</p>
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -98,7 +106,7 @@ export function SetPeekIdentityForm({
           className="input-field"
           placeholder="Tap a suggestion or type your own"
         />
-        <p className="text-xs text-peek-muted">Suggestions — tap one you like:</p>
+        <p className="text-xs text-peek-muted">Suggestions. Tap one you like:</p>
         <div className="flex flex-wrap gap-2 pt-1">
           {nicknameSuggestions.map((suggestion) => (
             <button
@@ -121,7 +129,7 @@ export function SetPeekIdentityForm({
       <div className="space-y-2">
         <p className="text-sm font-semibold text-peek-text">Profile icon</p>
         <p className="text-xs text-peek-muted">
-          {avatarIcon ? "Selected — tap another to change." : "Pick one:"}
+          {avatarIcon ? "Selected. Tap another to change." : "Pick one:"}
         </p>
         <div className="flex flex-wrap gap-2.5">
           {PEEK_AVATAR_OPTIONS.map(({ emoji, ring }) => (

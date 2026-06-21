@@ -15,7 +15,7 @@ export async function GET() {
     serviceRoleConfigured,
     adminNotifyConfigured,
     hint: serviceRoleConfigured
-      ? "Server key is set — signup should work."
+      ? "Server key is set. Signup should work."
       : missingServiceRoleMessage(),
     adminNotifyHint: adminNotifyConfigured
       ? "Admin email alerts are configured (Resend + ADMIN_EMAIL)."

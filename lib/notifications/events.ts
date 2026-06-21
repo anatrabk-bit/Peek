@@ -23,7 +23,7 @@ export function buildNotificationContent(
     case "peek_applied":
       return {
         title: "A Peek wants your job",
-        body: `Someone applied for "${safeTitle}" — review their profile and approve or decline.`,
+        body: `Someone applied for "${safeTitle}". Review their profile and approve or decline.`,
         url: `/requests/${requestId}`
       };
     case "peek_approved":
@@ -47,7 +47,7 @@ export function buildNotificationContent(
     case "new_request_nearby":
       return {
         title: "New job nearby",
-        body: `"${safeTitle}" is open — apply if you're nearby.`,
+        body: `"${safeTitle}" is open. Apply if you're nearby.`,
         url: `/requests/${requestId}`
       };
   }

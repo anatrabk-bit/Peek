@@ -28,7 +28,7 @@ export function SetDisplayNameForm() {
     <form onSubmit={handleSubmit} className="card-static mt-4 space-y-3 border border-zinc-200">
       <p className="text-sm font-semibold text-peek-text">Your name</p>
       <p className="text-sm text-peek-muted">
-        We use this for &ldquo;Hey, Anat!&rdquo; — not your email.
+        We use this for &ldquo;Hey, Anat!&rdquo;, not your email.
       </p>
       <input
         type="text"

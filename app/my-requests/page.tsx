@@ -32,7 +32,9 @@ export default async function MyRequestsPage({
     <section className="page-container space-y-8">
       {searchParams.posted === "1" && (
         <p className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-          Your request is live — a nearby Peek can grab it anytime.
+          Your request is live.
+          <br />
+          A nearby Peek can grab it anytime.
         </p>
       )}
 

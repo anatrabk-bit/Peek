@@ -102,10 +102,11 @@ export function BrowseRequestsView({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-peek-text">Map view</h2>
-            <p className="mt-1 text-sm text-peek-muted">
-              All open requests on the map. Tap a pin and hit &quot;I&apos;m on
-              it&quot; — first Peek nearby wins.
-            </p>
+            <div className="mt-1 space-y-1 text-sm text-peek-muted">
+              <p>All open requests on the map.</p>
+              <p>Tap a pin and hit &quot;I&apos;m on it&quot;.</p>
+              <p>First Peek nearby wins.</p>
+            </div>
           </div>
 
           <button

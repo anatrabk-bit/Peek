@@ -39,7 +39,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
         <div>
           <h2 className="heading-section text-xl">Join Peek</h2>
           <p className="mt-2 text-body">
-            Email and phone — you&apos;re in instantly.
+            Email and phone. You&apos;re in instantly.
           </p>
         </div>
         <button

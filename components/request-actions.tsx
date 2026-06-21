@@ -193,10 +193,11 @@ export function RequestActions({
     <div className="mt-6 space-y-6">
       {canClaim && !showLoginPrompt && (
         <>
-          <p className="text-sm text-peek-muted">
-            Already nearby? Grab this task — first Peek wins. You&apos;ll stay
-            anonymous; only your nickname and icon show.
-          </p>
+          <div className="space-y-1 text-sm text-peek-muted">
+            <p>Already nearby? Grab this task.</p>
+            <p>First Peek wins.</p>
+            <p>You&apos;ll stay anonymous. Only your nickname and icon show.</p>
+          </div>
           <button
             type="button"
             onClick={handleClaim}

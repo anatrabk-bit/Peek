@@ -88,8 +88,10 @@ export function InstallAppPrompt() {
               Tap Share, then{" "}
               <span className="font-semibold text-peek-text">
                 Add to Home Screen
-              </span>{" "}
-              — it works like an app, with notifications and quick access.
+              </span>
+              .
+              <br />
+              It works like an app, with notifications and quick access.
             </p>
           ) : (
             <p className="mt-1 text-sm leading-relaxed text-peek-muted">

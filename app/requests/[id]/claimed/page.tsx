@@ -52,14 +52,15 @@ export default async function ClaimedConfirmationPage({
         {awaitingApproval ? (
           <div className="rounded-2xl border border-violet-200 bg-violet-50 p-5 text-violet-900">
             <p className="text-lg font-semibold">Application sent!</p>
-            <p className="mt-2 text-sm leading-relaxed">
-              The client is reviewing your profile. You&apos;ll be able to start
-              once they approve you — check back here or refresh this page.
-            </p>
+            <div className="mt-2 space-y-1 text-sm leading-relaxed">
+              <p>The client is reviewing your profile.</p>
+              <p>You&apos;ll be able to start once they approve you.</p>
+              <p>Check back here or refresh this page.</p>
+            </div>
           </div>
         ) : (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
-            <p className="text-lg font-semibold">You&apos;re approved — go for it!</p>
+            <p className="text-lg font-semibold">You&apos;re approved. Go for it!</p>
             <p className="mt-2 text-sm leading-relaxed">
               Head to the address below, complete the task, then come back to
               submit your answer.
