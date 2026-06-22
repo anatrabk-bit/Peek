@@ -29,10 +29,24 @@ const nunito = Nunito({
   weight: ["400", "600", "700", "800"]
 });
 
+const SITE_TITLE = "Peek - Ask someone nearby to check - without going yourself";
+const SITE_DESCRIPTION =
+  "Someone's already there. They check what you need - open, in stock, or how long the queue is - and reply in minutes.";
+
 export const metadata: Metadata = {
-  title: "Peek - Skip the trip. Spread a little good.",
-  description:
-    "Ask someone nearby for a quick check, or help out and earn stars. Anonymous, friendly, free to post.",
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    siteName: "Peek",
+    type: "website"
+  },
+  twitter: {
+    card: "summary",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION
+  },
   applicationName: "Peek",
   manifest: "/manifest.webmanifest",
   appleWebApp: {

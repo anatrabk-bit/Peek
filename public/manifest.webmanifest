@@ -1,7 +1,7 @@
 {
-  "name": "Peek — Skip the trip. Ask a Peek.",
+  "name": "Peek - Ask someone nearby to check",
   "short_name": "Peek",
-  "description": "Post a request when you need help in person. Become a Peek and earn helping nearby.",
+  "description": "Someone's already there. They check what you need and reply in minutes. Free to post.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
