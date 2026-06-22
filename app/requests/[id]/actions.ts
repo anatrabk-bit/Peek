@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { notifyRequestWentLive, sendUserNotification } from "@/lib/notifications/send";
 import { canClaimScheduledTask } from "@/lib/task-schedule";
 import { awardPeekStarsForCompletion } from "@/lib/supabase/peek-profile";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient, isServiceRoleConfigured } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 function loginRedirect(requestId: string) {
@@ -20,8 +20,29 @@ function isRlsError(error: { code?: string; message?: string } | null) {
   );
 }
 
-const MIGRATION_014_HINT =
-  "Run supabase/migrations/014_peek_approval.sql in Supabase → SQL Editor, then try again.";
+const MIGRATION_CLAIM_HINT =
+  "Run supabase/migrations/024_direct_claim_rls.sql in Supabase → SQL Editor, then try again.";
+
+async function tryClaimRpc(
+  supabase: ReturnType<typeof createClient>,
+  requestId: string,
+  userId: string
+) {
+  const { data, error } = await supabase.rpc("claim_request_race", {
+    p_request_id: requestId,
+    p_runner_id: userId
+  });
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  if (data === true) {
+    return { data: { id: requestId }, error: null };
+  }
+
+  return { data: null, error: null };
+}
 
 async function tryAdminClaimFallback(
   requestId: string,
@@ -114,9 +135,15 @@ export async function claimRequest(requestId: string) {
     };
   }
 
-  let { data, error } = await tryClaimUpdate(supabase, requestId, user.id);
+  let { data, error } = await tryClaimRpc(supabase, requestId, user.id);
 
-  if ((!data || isRlsError(error)) && process.env.NODE_ENV === "development") {
+  if (!data && !error) {
+    const directResult = await tryClaimUpdate(supabase, requestId, user.id);
+    data = directResult.data;
+    error = directResult.error;
+  }
+
+  if ((!data || isRlsError(error)) && isServiceRoleConfigured()) {
     const adminResult = await tryAdminClaimFallback(requestId, user.id);
     if (adminResult.data) {
       data = adminResult.data;
@@ -132,7 +159,7 @@ export async function claimRequest(requestId: string) {
     if (isRlsError(error)) {
       return {
         ok: false as const,
-        error: MIGRATION_014_HINT
+        error: MIGRATION_CLAIM_HINT
       };
     }
     return {
