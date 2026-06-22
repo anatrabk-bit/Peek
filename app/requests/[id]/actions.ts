@@ -10,6 +10,10 @@ import {
   notifyClaimWindowOpenIfNeeded,
   notifyRequesterAboutClaim
 } from "@/lib/supabase/claim-notify";
+import {
+  subscribeTaskReminder,
+  unsubscribeTaskReminder
+} from "@/lib/supabase/task-reminders";
 import { awardPeekStarsForCompletion } from "@/lib/supabase/peek-profile";
 import { createAdminClient, isServiceRoleConfigured } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -221,6 +225,44 @@ export async function claimRequest(requestId: string) {
 
 export async function triggerClaimWindowNotification(requestId: string) {
   await notifyClaimWindowOpenIfNeeded(requestId);
+  return { ok: true as const };
+}
+
+export async function subscribeTaskReminderAction(requestId: string) {
+  const supabase = createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { ok: false as const, needsAuth: true as const };
+  }
+
+  const result = await subscribeTaskReminder(requestId, user.id);
+  if (!result.ok) {
+    return { ok: false as const, error: result.error };
+  }
+
+  revalidatePath(`/requests/${requestId}`);
+  return { ok: true as const };
+}
+
+export async function unsubscribeTaskReminderAction(requestId: string) {
+  const supabase = createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { ok: false as const, needsAuth: true as const };
+  }
+
+  const result = await unsubscribeTaskReminder(requestId, user.id);
+  if (!result.ok) {
+    return { ok: false as const, error: result.error };
+  }
+
+  revalidatePath(`/requests/${requestId}`);
   return { ok: true as const };
 }
 

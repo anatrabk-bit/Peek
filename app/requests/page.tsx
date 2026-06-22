@@ -1,7 +1,10 @@
 import { BrowseRequestsView } from "@/components/maps/browse-requests-view";
+import { processDueTaskReminders } from "@/lib/supabase/task-reminders";
 import { getOpenRequests } from "@/lib/supabase/requests";
 
 export default async function BrowseRequestsPage() {
+  await processDueTaskReminders();
+
   const { requests, error: fetchError } = await getOpenRequests();
 
   return (

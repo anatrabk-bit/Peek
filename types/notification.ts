@@ -7,7 +7,8 @@ export type NotificationEvent =
   | "answer_ready"
   | "new_request_nearby"
   | "claim_reserved"
-  | "claim_window_open";
+  | "claim_window_open"
+  | "task_reminder";
 
 export type UserNotification = {
   id: string;

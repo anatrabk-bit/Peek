@@ -1,0 +1,17 @@
+---
+description: Apply Supabase SQL migrations automatically after changing migration files
+globs: supabase/migrations/**/*.sql
+alwaysApply: false
+---
+
+# Supabase migrations
+
+When you add or edit a file under `supabase/migrations/`:
+
+1. Run `npm run db:migrate` to apply pending migrations to the linked Supabase database.
+2. If the user already ran the same SQL manually in Supabase SQL Editor, run `npm run db:migrate -- --baseline` once so history is recorded without re-running SQL.
+3. Use `npm run db:migrate -- --status` to see what is pending.
+
+Requires `SUPABASE_DB_PASSWORD` (or `SUPABASE_DB_URL`) in `.env.local` — see `.env.example`.
+
+Do not ask the user to paste the database password in chat. If missing, tell them to add it to `.env.local` locally.

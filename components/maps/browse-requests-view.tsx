@@ -18,7 +18,7 @@ const RequestsMap = dynamic(
 );
 import { getDistanceKm, hasValidCoordinates, type Coordinates } from "@/lib/geo";
 import { REQUEST_STATUS_LABELS } from "@/lib/request-status-labels";
-import { canClaimScheduledTask, claimOpensAtMessage } from "@/lib/task-schedule";
+import { claimOpensAtMessage } from "@/lib/task-schedule";
 import { splitPlaceLocation } from "@/lib/format-place";
 import { TaskScheduleBadge } from "@/components/task-schedule-badge";
 import type { MarketplaceRequest } from "@/types/request";
@@ -106,7 +106,7 @@ export function BrowseRequestsView({
             <h2 className="text-lg font-semibold text-peek-text">Map view</h2>
             <div className="mt-1 space-y-1 text-sm text-peek-muted">
               <p>All open requests on the map.</p>
-              <p>Tap a pin and hit &quot;I&apos;m on it&quot;.</p>
+              <p>Tap a pin, view details, then tap I&apos;m on it.</p>
               <p>First Peek nearby wins.</p>
             </div>
           </div>
@@ -130,7 +130,6 @@ export function BrowseRequestsView({
         </h2>
 
         {requests.map((request) => {
-          const claimOpen = canClaimScheduledTask(request);
           const opensLater = claimOpensAtMessage(request);
           const locationParts = splitPlaceLocation(request.location);
 
@@ -152,7 +151,12 @@ export function BrowseRequestsView({
                     {locationParts.address}
                   </p>
                 )}
-                {!claimOpen && opensLater && (
+                {!opensLater && (
+                  <p className="mt-2 text-xs font-medium text-emerald-700">
+                    Open now
+                  </p>
+                )}
+                {opensLater && (
                   <p className="mt-2 text-xs font-medium text-violet-700">
                     {opensLater}
                   </p>
@@ -176,11 +180,9 @@ export function BrowseRequestsView({
               </p>
               <Link
                 href={`/requests/${request.id}`}
-                className={`px-5 py-2 text-sm ${
-                  claimOpen ? "btn-secondary" : "btn-secondary opacity-70"
-                }`}
+                className="btn-secondary px-5 py-2 text-sm"
               >
-                {claimOpen ? "I'm on it →" : "View details →"}
+                View details →
               </Link>
             </div>
           </article>

@@ -74,5 +74,13 @@ export function buildNotificationContent(
         body: `"${safeTitle}" is ready. Head there when you can and submit your answer.`,
         url: `/requests/${requestId}`
       };
+    case "task_reminder":
+      return {
+        title: "Task opens soon",
+        body: when
+          ? `"${safeTitle}" opens ${when.toLowerCase()}. Tap I'm on it if you're nearby.`
+          : `"${safeTitle}" opens in about 15 minutes. Tap I'm on it if you're nearby.`,
+        url: `/requests/${requestId}`
+      };
   }
 }

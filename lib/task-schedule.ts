@@ -187,3 +187,39 @@ export function claimOpensAtMessage(fields: TaskScheduleFields): string | null {
 
   return `Opens ${formatTaskSchedule(fields).toLowerCase()}`;
 }
+
+const REMINDER_BEFORE_MS = 15 * 60 * 1000;
+
+export function isFutureScheduledTask(
+  fields: TaskScheduleFields,
+  now = new Date()
+): boolean {
+  if (fields.task_type !== "scheduled" || fields.schedule_mode === "live") {
+    return false;
+  }
+
+  if (!fields.scheduled_at) {
+    return false;
+  }
+
+  const scheduled = new Date(fields.scheduled_at);
+  if (Number.isNaN(scheduled.getTime())) {
+    return false;
+  }
+
+  return scheduled.getTime() > now.getTime();
+}
+
+export function getTaskReminderAt(
+  fields: TaskScheduleFields,
+  now = new Date()
+): Date | null {
+  if (!isFutureScheduledTask(fields, now)) {
+    return null;
+  }
+
+  const scheduled = new Date(fields.scheduled_at!);
+  const remindAt = new Date(scheduled.getTime() - REMINDER_BEFORE_MS);
+
+  return remindAt.getTime() < now.getTime() ? now : remindAt;
+}

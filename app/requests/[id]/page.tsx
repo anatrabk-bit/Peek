@@ -5,6 +5,7 @@ import { UserProfilePreview } from "@/components/user-profile-preview";
 import { releaseExpiredClaimIfNeeded } from "@/lib/supabase/claim-lifecycle";
 import { notifyClaimWindowOpenIfNeeded } from "@/lib/supabase/claim-notify";
 import { getPublicPeekDisplay } from "@/lib/supabase/peek-profile";
+import { hasTaskReminder, processDueTaskReminders } from "@/lib/supabase/task-reminders";
 import { splitPlaceLocation } from "@/lib/format-place";
 import {
   getRequestById,
@@ -29,6 +30,7 @@ export default async function RequestDetailsPage({
 
   await releaseExpiredClaimIfNeeded(params.id);
   await notifyClaimWindowOpenIfNeeded(params.id);
+  await processDueTaskReminders();
 
   const [request, existingResponse] = await Promise.all([
     getRequestById(params.id),
@@ -38,6 +40,9 @@ export default async function RequestDetailsPage({
   if (!request) {
     notFound();
   }
+
+  const hasReminder =
+    user?.id != null ? await hasTaskReminder(params.id, user.id) : false;
 
   const isOwner = user?.id === request.user_id;
   const locationParts = splitPlaceLocation(request.location);
@@ -81,6 +86,7 @@ export default async function RequestDetailsPage({
           userId={user?.id ?? null}
           existingResponse={existingResponse}
           assignedPeek={assignedPeek}
+          hasReminder={hasReminder}
         />
 
         {isOwner && assignedPeek && request.status !== "completed" && (

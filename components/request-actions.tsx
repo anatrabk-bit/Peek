@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { claimRequest } from "@/app/requests/[id]/actions";
 import { ClaimTimerPanel } from "@/components/claim-timer-panel";
+import { TaskReminderButton } from "@/components/task-reminder-button";
 import { SubmitResponseForm } from "@/components/submit-response-form";
 import { UserProfilePreview } from "@/components/user-profile-preview";
 import { createClient } from "@/lib/supabase/client";
@@ -11,7 +12,8 @@ import { isClaimWindowOpen } from "@/lib/claim-session";
 import {
   canClaimScheduledTask,
   claimOpensAtMessage,
-  formatTaskSchedule
+  formatTaskSchedule,
+  isFutureScheduledTask
 } from "@/lib/task-schedule";
 import type { PublicPeekDisplay } from "@/lib/supabase/peek-profile";
 import type { MarketplaceRequest, RequestResponse } from "@/types/request";
@@ -24,6 +26,7 @@ type RequestActionsProps = {
   userId: string | null;
   existingResponse: RequestResponse | null;
   assignedPeek?: PublicPeekDisplay | null;
+  hasReminder?: boolean;
 };
 
 function ResponseCard({
@@ -57,7 +60,8 @@ export function RequestActions({
   request,
   userId,
   existingResponse,
-  assignedPeek = null
+  assignedPeek = null,
+  hasReminder = false
 }: RequestActionsProps) {
   const isOwner = !!(userId && request.user_id === userId);
   const isAssignedRunner = !!(userId && request.runner_id === userId);
@@ -249,12 +253,23 @@ export function RequestActions({
     );
   }
 
+  const futureScheduled = isFutureScheduledTask(request);
+
   return (
     <div className="mt-6 space-y-6">
       {isOpen && !scheduleOpen && opensLaterMessage && (
-        <p className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-900">
-          Not open yet. {opensLaterMessage}.
-        </p>
+        <div className="space-y-4 rounded-xl border border-violet-200 bg-violet-50 px-4 py-4 text-violet-900">
+          <p className="text-sm leading-relaxed">
+            Not open yet. {opensLaterMessage}.
+          </p>
+          {futureScheduled && (
+            <TaskReminderButton
+              requestId={request.id}
+              initialSubscribed={hasReminder}
+              loggedIn={!!userId}
+            />
+          )}
+        </div>
       )}
 
       {canClaim && !showLoginPrompt && (
