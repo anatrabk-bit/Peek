@@ -91,28 +91,20 @@ function findPlaceByText(query: string): Promise<PlaceSelection | null> {
   });
 }
 
-export function PlacesAutocomplete({
+function LocationInput({
   onPlaceSelect,
   disabled = false,
-  defaultValue = ""
-}: PlacesAutocompleteProps) {
+  defaultValue = "",
+  mapsReady = false
+}: PlacesAutocompleteProps & { mapsReady?: boolean }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const onPlaceSelectRef = useRef(onPlaceSelect);
   const [mapsHint, setMapsHint] = useState<string | null>(null);
 
   onPlaceSelectRef.current = onPlaceSelect;
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
-
-  const { isLoaded, loadError } = useJsApiLoader({
-    id: "peek-google-maps-places",
-    googleMapsApiKey: apiKey,
-    libraries: GOOGLE_MAPS_LIBRARIES,
-    version: "weekly"
-  });
-
   useEffect(() => {
-    if (!isLoaded || !inputRef.current || disabled) {
+    if (!mapsReady || !inputRef.current || disabled) {
       return;
     }
 
@@ -153,32 +145,10 @@ export function PlacesAutocomplete({
     return () => {
       google.maps.event.removeListener(listener);
     };
-  }, [isLoaded, disabled]);
+  }, [mapsReady, disabled]);
 
   function handleInputChange() {
     onPlaceSelectRef.current(null);
-  }
-
-  if (!apiKey) {
-    return (
-      <div className="space-y-2">
-        <input
-          ref={inputRef}
-          id="location"
-          name="location"
-          type="text"
-          required
-          disabled={disabled}
-          defaultValue={defaultValue}
-          placeholder="Street, city, or place name"
-          className="input-field"
-          onChange={handleInputChange}
-        />
-        <p className="text-sm text-amber-800">
-          Map search is not set up. Type the address anyway.
-        </p>
-      </div>
-    );
   }
 
   return (
@@ -198,18 +168,7 @@ export function PlacesAutocomplete({
         aria-describedby={mapsHint ? "location-maps-hint" : undefined}
       />
 
-      {!isLoaded && !loadError && (
-        <p className="text-sm text-peek-muted">Loading address search…</p>
-      )}
-
-      {loadError && (
-        <p className="text-sm text-amber-800">
-          Could not load map search. Type the full address - we will try to pin
-          it when you post.
-        </p>
-      )}
-
-      {mapsHint && (
+      {mapsReady && mapsHint && (
         <p id="location-maps-hint" className="text-sm text-peek-muted">
           {mapsHint}
         </p>
@@ -220,4 +179,48 @@ export function PlacesAutocomplete({
       </p>
     </div>
   );
+}
+
+function PlacesAutocompleteWithMaps(props: PlacesAutocompleteProps) {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+  const { isLoaded, loadError } = useJsApiLoader({
+    id: "peek-google-maps",
+    googleMapsApiKey: apiKey,
+    libraries: GOOGLE_MAPS_LIBRARIES,
+    version: "weekly"
+  });
+
+  return (
+    <div className="space-y-2">
+      <LocationInput {...props} mapsReady={isLoaded} />
+
+      {!isLoaded && !loadError && (
+        <p className="text-sm text-peek-muted">Loading address search…</p>
+      )}
+
+      {loadError && (
+        <p className="text-sm text-amber-800">
+          Could not load map search. Type the full address - we will try to pin
+          it when you post.
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function PlacesAutocomplete(props: PlacesAutocompleteProps) {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+
+  if (!apiKey) {
+    return (
+      <div className="space-y-2">
+        <LocationInput {...props} />
+        <p className="text-sm text-amber-800">
+          Map search is not set up. Type the address anyway.
+        </p>
+      </div>
+    );
+  }
+
+  return <PlacesAutocompleteWithMaps {...props} />;
 }

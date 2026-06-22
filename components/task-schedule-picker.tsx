@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   defaultCustomDatetimeLocal,
   defaultTimeValue,
@@ -21,13 +21,28 @@ const SCHEDULE_MODES: ScheduleMode[] = [
 ];
 
 export function TaskSchedulePicker({ disabled = false }: TaskSchedulePickerProps) {
-  const now = useMemo(() => new Date(), []);
+  const [ready, setReady] = useState(false);
   const [taskType, setTaskType] = useState<TaskType | "">("");
   const [scheduleMode, setScheduleMode] = useState<ScheduleMode>("live");
-  const [scheduleTime, setScheduleTime] = useState(defaultTimeValue(now));
-  const [customScheduledAt, setCustomScheduledAt] = useState(
-    defaultCustomDatetimeLocal(now)
-  );
+  const [scheduleTime, setScheduleTime] = useState("12:00");
+  const [customScheduledAt, setCustomScheduledAt] = useState("");
+  const [minCustomAt, setMinCustomAt] = useState("");
+
+  useEffect(() => {
+    const now = new Date();
+    setScheduleTime(defaultTimeValue(now));
+    setCustomScheduledAt(defaultCustomDatetimeLocal(now));
+    setMinCustomAt(defaultCustomDatetimeLocal(now));
+    setReady(true);
+  }, []);
+
+  if (!ready) {
+    return (
+      <div className="rounded-2xl border border-zinc-200 bg-peek-card p-4 text-sm text-peek-muted">
+        Loading schedule options…
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -169,7 +184,7 @@ export function TaskSchedulePicker({ disabled = false }: TaskSchedulePickerProps
                           setCustomScheduledAt(event.target.value)
                         }
                         disabled={disabled || scheduleMode !== "custom"}
-                        min={defaultCustomDatetimeLocal(now)}
+                        min={minCustomAt}
                         className="input-field max-w-full sm:max-w-xs"
                         required={scheduleMode === "custom"}
                       />
