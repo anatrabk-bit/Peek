@@ -100,6 +100,12 @@ export async function createRequest(formData: FormData) {
             "Run supabase/migrations/021_task_schedule.sql in Supabase, then try again."
         };
       }
+      if (error?.message?.includes("requests_budget_check")) {
+        return {
+          error:
+            "Database still requires a paid budget. Run supabase/migrations/023_allow_free_requests_budget.sql in Supabase SQL Editor, then try again."
+        };
+      }
       return { error: error?.message ?? "Could not save request." };
     }
 

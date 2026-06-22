@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { notifyRequestWentLive, sendUserNotification } from "@/lib/notifications/send";
+import { canClaimScheduledTask } from "@/lib/task-schedule";
 import { awardPeekStarsForCompletion } from "@/lib/supabase/peek-profile";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -66,7 +67,9 @@ export async function claimRequest(requestId: string) {
 
   const { data: existing } = await supabase
     .from("requests")
-    .select("user_id, status, runner_id")
+    .select(
+      "user_id, status, runner_id, task_type, schedule_mode, scheduled_at"
+    )
     .eq("id", requestId)
     .maybeSingle();
 
@@ -77,11 +80,26 @@ export async function claimRequest(requestId: string) {
     };
   }
 
+  const taskType = existing?.task_type ?? "untimed";
+  if (
+    existing &&
+    !canClaimScheduledTask({
+      task_type: taskType,
+      schedule_mode: existing.schedule_mode ?? null,
+      scheduled_at: existing.scheduled_at ?? null
+    })
+  ) {
+    return {
+      ok: false as const,
+      error: "This task is not open for claiming yet. Check back closer to the scheduled time."
+    };
+  }
+
   if (
     existing?.status === "claimed" &&
     existing.runner_id === user.id
   ) {
-    redirect(`/requests/${requestId}/claimed`);
+    redirect(`/requests/${requestId}`);
   }
 
   if (
@@ -152,6 +170,55 @@ export async function claimRequest(requestId: string) {
   }
 
   redirect(`/requests/${requestId}`);
+}
+
+export async function checkInOnClaim(requestId: string) {
+  const supabase = createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { ok: false as const, error: "Log in to check in." };
+  }
+
+  const { data: row, error } = await supabase
+    .from("requests")
+    .select("runner_id, status, claimed_at, peek_check_in_at")
+    .eq("id", requestId)
+    .maybeSingle();
+
+  if (error || !row) {
+    return { ok: false as const, error: "Request not found." };
+  }
+
+  if (row.runner_id !== user.id || row.status !== "claimed") {
+    return { ok: false as const, error: "You are not assigned to this task." };
+  }
+
+  if (row.peek_check_in_at) {
+    return { ok: true as const };
+  }
+
+  const { error: updateError } = await supabase
+    .from("requests")
+    .update({ peek_check_in_at: new Date().toISOString() })
+    .eq("id", requestId)
+    .eq("runner_id", user.id)
+    .eq("status", "claimed");
+
+  if (updateError) {
+    if (updateError.message.includes("peek_check_in_at")) {
+      return {
+        ok: false as const,
+        error: "Run supabase/migrations/022_peek_check_in.sql in Supabase."
+      };
+    }
+    return { ok: false as const, error: updateError.message };
+  }
+
+  revalidatePath(`/requests/${requestId}`);
+  return { ok: true as const };
 }
 
 async function assertRequestOwner(requestId: string, userId: string) {

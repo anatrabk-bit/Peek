@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { SharePeekButton } from "@/components/share-peek-button";
+
+const supportUrl = process.env.NEXT_PUBLIC_SUPPORT_URL?.trim();
 
 type FooterProps = {
   className?: string;
@@ -49,9 +52,22 @@ export function Footer({ className }: FooterProps) {
                   Profile &amp; stars
                 </Link>
               </li>
+              {supportUrl && (
+                <li>
+                  <a
+                    href={supportUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-peek-primary"
+                  >
+                    Support Peek
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
         </div>
+        <SharePeekButton label="Invite a friend" />
       </div>
       <div className="border-t border-peek-border py-4 text-center text-xs text-peek-muted">
         © {new Date().getFullYear()} Peek

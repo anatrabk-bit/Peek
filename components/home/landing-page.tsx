@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SharePeekButton } from "@/components/share-peek-button";
 
 const examples = [
   "Is Pret on High Street open right now?",
@@ -84,6 +85,11 @@ export function LandingPage() {
           <p className="text-sm text-sky-100/90">
             Anonymous nicknames · no real names shown · free to post
           </p>
+
+          <SharePeekButton
+            className="btn-hero-outline btn-fun mx-auto text-sm"
+            label="Share Peek with friends"
+          />
         </div>
       </section>
 

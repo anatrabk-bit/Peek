@@ -3,8 +3,10 @@
 import { useCallback, useState, useTransition } from "react";
 import {
   PlacesAutocomplete,
+  geocodeAddress,
   type PlaceSelection
 } from "@/components/maps/places-autocomplete";
+import { splitPlaceLocation } from "@/lib/format-place";
 import { TaskSchedulePicker } from "@/components/task-schedule-picker";
 import { createRequest } from "@/app/post-request/actions";
 
@@ -13,39 +15,53 @@ export function PostRequestForm() {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const handlePlaceSelect = useCallback((selection: PlaceSelection) => {
+  const handlePlaceSelect = useCallback((selection: PlaceSelection | null) => {
     setPlace(selection);
-    setError(null);
+    if (selection) {
+      setError(null);
+    }
   }, []);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
 
     const locationFromForm = String(formData.get("location") ?? "").trim();
     const latitude = Number(formData.get("latitude"));
     const longitude = Number(formData.get("longitude"));
 
-    const selectedPlace: PlaceSelection | null =
-      place ??
-      (locationFromForm &&
-      !Number.isNaN(latitude) &&
-      !Number.isNaN(longitude)
-        ? { location: locationFromForm, latitude, longitude }
-        : null);
-
-    if (!selectedPlace) {
-      setError("Pick a place from the suggestions so we can pin it on the map.");
-      return;
-    }
-
-    formData.set("location", selectedPlace.location);
-    formData.set("latitude", String(selectedPlace.latitude));
-    formData.set("longitude", String(selectedPlace.longitude));
-
     startTransition(async () => {
+      let selectedPlace: PlaceSelection | null =
+        place ??
+        (locationFromForm &&
+        !Number.isNaN(latitude) &&
+        !Number.isNaN(longitude)
+          ? { location: locationFromForm, latitude, longitude }
+          : null);
+
+      if (!selectedPlace && locationFromForm) {
+        const geocoded = await geocodeAddress(locationFromForm);
+        if (geocoded) {
+          selectedPlace = geocoded;
+        }
+      }
+
+      if (!selectedPlace) {
+        setError(
+          locationFromForm
+            ? "We could not find that address. Add more detail (street and city) or pick a suggestion."
+            : "Enter where the task is."
+        );
+        return;
+      }
+
+      formData.set("location", selectedPlace.location);
+      formData.set("latitude", String(selectedPlace.latitude));
+      formData.set("longitude", String(selectedPlace.longitude));
+
       const result = await createRequest(formData);
       if (result?.error) {
         setError(result.error);
@@ -100,7 +116,17 @@ export function PostRequestForm() {
             <input type="hidden" name="location" value={place.location} />
             <input type="hidden" name="latitude" value={place.latitude} />
             <input type="hidden" name="longitude" value={place.longitude} />
-            <p className="text-sm text-peek-muted">Pinned: {place.location}</p>
+            {(() => {
+              const locationParts = splitPlaceLocation(place.location);
+              return (
+                <div className="text-sm text-peek-muted">
+                  <p className="font-semibold text-peek-text">
+                    Pinned: {locationParts.placeName}
+                  </p>
+                  {locationParts.address && <p>{locationParts.address}</p>}
+                </div>
+              );
+            })()}
           </>
         )}
       </div>

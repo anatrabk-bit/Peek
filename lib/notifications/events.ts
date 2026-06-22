@@ -22,20 +22,20 @@ export function buildNotificationContent(
       };
     case "peek_applied":
       return {
-        title: "A Peek wants your job",
-        body: `Someone applied for "${safeTitle}". Review their profile and approve or decline.`,
+        title: "A Peek is on it",
+        body: `Someone grabbed "${safeTitle}" and is checking now.`,
         url: `/requests/${requestId}`
       };
     case "peek_approved":
       return {
-        title: "You're approved!",
-        body: `The client approved you for "${safeTitle}". You can start the job now.`,
-        url: `/requests/${requestId}/claimed`
+        title: "You're on the task",
+        body: `"${safeTitle}" is yours. Head there and submit your answer.`,
+        url: `/requests/${requestId}`
       };
     case "peek_declined":
       return {
-        title: "Application declined",
-        body: `The client declined your application for "${safeTitle}". Browse more jobs nearby.`,
+        title: "Task reopened",
+        body: `"${safeTitle}" is open again. Browse more jobs nearby.`,
         url: "/requests"
       };
     case "answer_ready":
@@ -47,7 +47,7 @@ export function buildNotificationContent(
     case "new_request_nearby":
       return {
         title: "New job nearby",
-        body: `"${safeTitle}" is open. Apply if you're nearby.`,
+        body: `"${safeTitle}" is open. Tap I'm on it if you're nearby.`,
         url: `/requests/${requestId}`
       };
   }

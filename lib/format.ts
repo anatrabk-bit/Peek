@@ -15,5 +15,7 @@ export function formatNotificationTitle(
   requestTitle: string,
   budget: number
 ): string {
-  return `New request ${formatDistanceKm(distanceKm)} away - ${requestTitle} £${budget}`;
+  const pay =
+    budget > 0 ? ` £${budget}` : "";
+  return `New request ${formatDistanceKm(distanceKm)} away - ${requestTitle}${pay}`;
 }

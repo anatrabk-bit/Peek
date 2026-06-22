@@ -152,3 +152,38 @@ export function formatTaskSchedule(
 export function isScheduledTask(fields: TaskScheduleFields): boolean {
   return fields.task_type === "scheduled";
 }
+
+const CLAIM_EARLY_MS = 5 * 60 * 1000;
+
+/** Scheduled tasks can be claimed from 5 minutes before scheduled_at (live = immediately). */
+export function canClaimScheduledTask(
+  fields: TaskScheduleFields,
+  now = new Date()
+): boolean {
+  if (fields.task_type === "untimed") {
+    return true;
+  }
+
+  if (fields.schedule_mode === "live") {
+    return true;
+  }
+
+  if (!fields.scheduled_at) {
+    return true;
+  }
+
+  const scheduled = new Date(fields.scheduled_at);
+  if (Number.isNaN(scheduled.getTime())) {
+    return true;
+  }
+
+  return now.getTime() >= scheduled.getTime() - CLAIM_EARLY_MS;
+}
+
+export function claimOpensAtMessage(fields: TaskScheduleFields): string | null {
+  if (canClaimScheduledTask(fields)) {
+    return null;
+  }
+
+  return `Opens ${formatTaskSchedule(fields).toLowerCase()}`;
+}

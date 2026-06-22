@@ -7,7 +7,7 @@ create table if not exists public.requests (
   location text not null,
   latitude double precision,
   longitude double precision,
-  budget numeric(10,2) not null check (budget > 0),
+  budget numeric(10,2) not null default 0 check (budget >= 0),
   details text,
   status text not null default 'open' check (status in ('open', 'claimed', 'completed'))
 );

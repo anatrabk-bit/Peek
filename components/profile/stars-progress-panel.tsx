@@ -39,6 +39,30 @@ export function StarsProgressPanel({ profile }: StarsProgressPanelProps) {
           style={{ width: `${Math.max(progress.percentToNextVoucher, 4)}%` }}
         />
       </div>
+
+      {profile.vouchers_earned > 0 && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+          <p className="font-semibold">Redeem your voucher</p>
+          <p className="mt-1 leading-relaxed">
+            You earned {profile.vouchers_earned} voucher
+            {profile.vouchers_earned === 1 ? "" : "s"}. Email us to claim it.
+          </p>
+          {process.env.NEXT_PUBLIC_SUPPORT_URL ? (
+            <a
+              href={process.env.NEXT_PUBLIC_SUPPORT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-block font-semibold text-peek-primary hover:underline"
+            >
+              Contact Peek →
+            </a>
+          ) : (
+            <p className="mt-2 text-xs text-amber-800">
+              Ask the Peek team how to redeem (support link coming soon).
+            </p>
+          )}
+        </div>
+      )}
     </article>
   );
 }

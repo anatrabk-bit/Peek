@@ -18,6 +18,8 @@ const RequestsMap = dynamic(
 );
 import { getDistanceKm, hasValidCoordinates, type Coordinates } from "@/lib/geo";
 import { REQUEST_STATUS_LABELS } from "@/lib/request-status-labels";
+import { canClaimScheduledTask, claimOpensAtMessage } from "@/lib/task-schedule";
+import { splitPlaceLocation } from "@/lib/format-place";
 import { TaskScheduleBadge } from "@/components/task-schedule-badge";
 import type { MarketplaceRequest } from "@/types/request";
 
@@ -127,7 +129,12 @@ export function BrowseRequestsView({
           {requests.length} open job{requests.length === 1 ? "" : "s"}
         </h2>
 
-        {requests.map((request) => (
+        {requests.map((request) => {
+          const claimOpen = canClaimScheduledTask(request);
+          const opensLater = claimOpensAtMessage(request);
+          const locationParts = splitPlaceLocation(request.location);
+
+          return (
           <article key={request.id} className="card">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -137,7 +144,19 @@ export function BrowseRequestsView({
                 <h3 className="text-lg font-semibold text-peek-text">
                   {request.title}
                 </h3>
-                <p className="mt-1 text-body">{request.location}</p>
+                <p className="mt-1 text-sm font-semibold text-peek-text">
+                  {locationParts.placeName}
+                </p>
+                {locationParts.address && (
+                  <p className="text-sm text-peek-muted">
+                    {locationParts.address}
+                  </p>
+                )}
+                {!claimOpen && opensLater && (
+                  <p className="mt-2 text-xs font-medium text-violet-700">
+                    {opensLater}
+                  </p>
+                )}
                 {userLocation &&
                   hasValidCoordinates(request.latitude, request.longitude) && (
                     <p className="mt-1 text-xs text-peek-muted">
@@ -157,13 +176,16 @@ export function BrowseRequestsView({
               </p>
               <Link
                 href={`/requests/${request.id}`}
-                className="btn-secondary px-5 py-2 text-sm"
+                className={`px-5 py-2 text-sm ${
+                  claimOpen ? "btn-secondary" : "btn-secondary opacity-70"
+                }`}
               >
-                I&apos;m on it →
+                {claimOpen ? "I'm on it →" : "View details →"}
               </Link>
             </div>
           </article>
-        ))}
+        );
+        })}
       </div>
     </div>
   );

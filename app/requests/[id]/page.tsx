@@ -2,7 +2,9 @@ import { notFound } from "next/navigation";
 import { RequestActions } from "@/components/request-actions";
 import { TaskScheduleBadge } from "@/components/task-schedule-badge";
 import { UserProfilePreview } from "@/components/user-profile-preview";
+import { releaseExpiredClaimIfNeeded } from "@/lib/supabase/claim-lifecycle";
 import { getPublicPeekDisplay } from "@/lib/supabase/peek-profile";
+import { splitPlaceLocation } from "@/lib/format-place";
 import {
   getRequestById,
   getResponseForRequest
@@ -24,6 +26,8 @@ export default async function RequestDetailsPage({
     data: { user }
   } = await supabase.auth.getUser();
 
+  await releaseExpiredClaimIfNeeded(params.id);
+
   const [request, existingResponse] = await Promise.all([
     getRequestById(params.id),
     getResponseForRequest(params.id)
@@ -34,6 +38,7 @@ export default async function RequestDetailsPage({
   }
 
   const isOwner = user?.id === request.user_id;
+  const locationParts = splitPlaceLocation(request.location);
 
   const assignedPeek =
     request.runner_id &&
@@ -55,7 +60,14 @@ export default async function RequestDetailsPage({
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-peek-text">
           {request.title}
         </h1>
-        <p className="mt-3 text-body">{request.location}</p>
+        <div className="mt-3">
+          <p className="text-base font-semibold text-peek-text">
+            {locationParts.placeName}
+          </p>
+          {locationParts.address && (
+            <p className="text-sm text-peek-muted">{locationParts.address}</p>
+          )}
+        </div>
         {request.details && (
           <p className="mt-4 text-sm leading-relaxed text-peek-muted">
             {request.details}

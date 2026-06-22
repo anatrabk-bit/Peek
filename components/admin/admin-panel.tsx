@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { deleteRequest, updateRequestStatus } from "@/app/admin/actions";
 import type { AdminRequestRow, AdminUserRow } from "@/lib/admin/queries";
+import { splitPlaceLocation } from "@/lib/format-place";
 import type { RequestStatus } from "@/types/request";
 
 type AdminPanelProps = {
@@ -174,7 +175,17 @@ export function AdminPanel({ requests, users }: AdminPanelProps) {
                     {request.schedule_label}
                   </td>
                   <td className="px-3 py-4 text-peek-muted">
-                    {request.location}
+                    {(() => {
+                      const locationParts = splitPlaceLocation(request.location);
+                      return (
+                        <>
+                          <p className="font-semibold text-peek-text">
+                            {locationParts.placeName}
+                          </p>
+                          {locationParts.address && <p>{locationParts.address}</p>}
+                        </>
+                      );
+                    })()}
                   </td>
                   <td className="px-3 py-4 capitalize">{request.status}</td>
                   <td className="px-3 py-4 whitespace-nowrap text-peek-muted">

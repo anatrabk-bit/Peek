@@ -17,6 +17,8 @@ type DbRequest = {
   task_type?: TaskType | null;
   schedule_mode?: ScheduleMode | null;
   scheduled_at?: string | null;
+  claimed_at?: string | null;
+  peek_check_in_at?: string | null;
 };
 
 export type OpenRequestsFetchResult = {
@@ -26,9 +28,16 @@ export type OpenRequestsFetchResult = {
 };
 
 const REQUEST_SELECT =
-  "id, title, location, budget, details, status, user_id, runner_id, latitude, longitude, created_at, task_type, schedule_mode, scheduled_at";
+  "id, title, location, budget, details, status, user_id, runner_id, latitude, longitude, created_at, task_type, schedule_mode, scheduled_at, claimed_at, peek_check_in_at";
+
+const REQUEST_SELECT_WITHOUT_CHECKIN =
+  "id, title, location, budget, details, status, user_id, runner_id, latitude, longitude, created_at, task_type, schedule_mode, scheduled_at, claimed_at";
 
 const BASE_SELECT = "id, title, location, budget, details, status";
+
+function isMissingColumnError(message: string): boolean {
+  return message.includes("does not exist");
+}
 
 function mapRequest(request: DbRequest): MarketplaceRequest {
   const taskType = request.task_type ?? "untimed";
@@ -49,7 +58,9 @@ function mapRequest(request: DbRequest): MarketplaceRequest {
     schedule_mode:
       taskType === "scheduled" ? (request.schedule_mode ?? "live") : null,
     scheduled_at:
-      taskType === "scheduled" ? (request.scheduled_at ?? null) : null
+      taskType === "scheduled" ? (request.scheduled_at ?? null) : null,
+    claimed_at: request.claimed_at ?? null,
+    peek_check_in_at: request.peek_check_in_at ?? null
   };
 }
 
@@ -103,6 +114,25 @@ export async function getOpenRequests(): Promise<OpenRequestsFetchResult> {
   count = result.count;
 
   logFetchResult("getOpenRequests", { data, error, count }, queryUsed);
+
+  if (error && isMissingColumnError(error.message)) {
+    queryUsed = REQUEST_SELECT_WITHOUT_CHECKIN;
+    const withoutCheckIn = await supabase
+      .from("requests")
+      .select(REQUEST_SELECT_WITHOUT_CHECKIN, { count: "exact" })
+      .eq("status", "open")
+      .order("created_at", { ascending: false });
+
+    data = withoutCheckIn.data as DbRequest[] | null;
+    error = withoutCheckIn.error;
+    count = withoutCheckIn.count;
+
+    logFetchResult(
+      "getOpenRequests (without peek_check_in_at)",
+      { data, error, count },
+      queryUsed
+    );
+  }
 
   if (error) {
     queryUsed = BASE_SELECT;
@@ -164,6 +194,17 @@ export async function getRequestById(
 
   data = fullResult.data as DbRequest | null;
   error = fullResult.error;
+
+  if (error && isMissingColumnError(error.message)) {
+    const withoutCheckIn = await supabase
+      .from("requests")
+      .select(REQUEST_SELECT_WITHOUT_CHECKIN)
+      .eq("id", id)
+      .single();
+
+    data = withoutCheckIn.data as DbRequest | null;
+    error = withoutCheckIn.error;
+  }
 
   if (error) {
     const fallback = await supabase
@@ -228,19 +269,36 @@ export async function getMyRequests(
 ): Promise<{ requests: MarketplaceRequest[]; error: string | null }> {
   const supabase = createClient();
 
-  const { data, error } = await supabase
+  let queryUsed = REQUEST_SELECT;
+  let { data, error } = await supabase
     .from("requests")
     .select(REQUEST_SELECT)
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
+
+  let rows = data as DbRequest[] | null;
+
+  if (error && isMissingColumnError(error.message)) {
+    queryUsed = REQUEST_SELECT_WITHOUT_CHECKIN;
+    const fallback = await supabase
+      .from("requests")
+      .select(REQUEST_SELECT_WITHOUT_CHECKIN)
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    rows = fallback.data as DbRequest[] | null;
+    error = fallback.error;
+  }
 
   if (error) {
     console.error("[Peek] getMyRequests failed:", error.message);
     return { requests: [], error: error.message };
   }
 
+  console.log("[Peek] getMyRequests OK", { queryUsed, count: rows?.length ?? 0 });
+
   return {
-    requests: (data ?? []).map((row) => mapRequest(row as DbRequest)),
+    requests: (rows ?? []).map((row) => mapRequest(row)),
     error: null
   };
 }

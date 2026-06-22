@@ -5,6 +5,7 @@ import {
   REQUEST_STATUS_LABELS,
   REQUEST_STATUS_STYLES
 } from "@/lib/request-status-labels";
+import { splitPlaceLocation } from "@/lib/format-place";
 import { createClient } from "@/lib/supabase/server";
 import { getMyRequests } from "@/lib/supabase/requests";
 
@@ -67,6 +68,9 @@ export default async function MyRequestsPage({
         <ul className="space-y-4">
           {requests.map((request) => (
             <li key={request.id}>
+              {(() => {
+                const locationParts = splitPlaceLocation(request.location);
+                return (
               <Link
                 href={`/requests/${request.id}`}
                 className="card block transition hover:shadow-card-hover"
@@ -86,12 +90,19 @@ export default async function MyRequestsPage({
                     <h2 className="mt-3 text-lg font-semibold text-peek-text">
                       {request.title}
                     </h2>
-                    <p className="mt-1 text-sm text-peek-muted">
-                      {request.location}
+                    <p className="mt-1 text-sm font-semibold text-peek-text">
+                      {locationParts.placeName}
                     </p>
+                    {locationParts.address && (
+                      <p className="text-sm text-peek-muted">
+                        {locationParts.address}
+                      </p>
+                    )}
                   </div>
                 </div>
               </Link>
+                );
+              })()}
             </li>
           ))}
         </ul>

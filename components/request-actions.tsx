@@ -3,9 +3,14 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { claimRequest } from "@/app/requests/[id]/actions";
+import { ClaimTimerPanel } from "@/components/claim-timer-panel";
 import { SubmitResponseForm } from "@/components/submit-response-form";
 import { UserProfilePreview } from "@/components/user-profile-preview";
 import { createClient } from "@/lib/supabase/client";
+import {
+  canClaimScheduledTask,
+  claimOpensAtMessage
+} from "@/lib/task-schedule";
 import type { PublicPeekDisplay } from "@/lib/supabase/peek-profile";
 import type { MarketplaceRequest, RequestResponse } from "@/types/request";
 
@@ -61,7 +66,10 @@ export function RequestActions({
   const completed =
     request.status === "completed" || !!existingResponse;
   const isOpen = request.status === "open" && !completed;
-  const canClaim = isOpen && !request.runner_id && !isOwner;
+  const scheduleOpen = canClaimScheduledTask(request);
+  const opensLaterMessage = claimOpensAtMessage(request);
+  const canClaim =
+    isOpen && !request.runner_id && !isOwner && scheduleOpen;
   const canSubmit = request.status === "claimed" && isAssignedRunner;
 
   async function handleClaim() {
@@ -95,6 +103,13 @@ export function RequestActions({
   if (isAssignedRunner && canSubmit && !completed) {
     return (
       <div className="mt-6 space-y-6">
+        {request.claimed_at && (
+          <ClaimTimerPanel
+            requestId={request.id}
+            claimedAt={request.claimed_at}
+            checkInAt={request.peek_check_in_at ?? null}
+          />
+        )}
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
           <p className="font-semibold">You&apos;re on it!</p>
           <p className="mt-2 text-sm leading-relaxed">
@@ -191,6 +206,12 @@ export function RequestActions({
 
   return (
     <div className="mt-6 space-y-6">
+      {isOpen && !scheduleOpen && opensLaterMessage && (
+        <p className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-900">
+          Not open yet. {opensLaterMessage}.
+        </p>
+      )}
+
       {canClaim && !showLoginPrompt && (
         <>
           <div className="space-y-1 text-sm text-peek-muted">

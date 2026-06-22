@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useJsApiLoader } from "@react-google-maps/api";
+import { formatPlaceLocation } from "@/lib/format-place";
 import { GOOGLE_MAPS_LIBRARIES } from "@/lib/google-maps";
 
 export type PlaceSelection = {
@@ -11,111 +12,82 @@ export type PlaceSelection = {
 };
 
 type PlacesAutocompleteProps = {
-  onPlaceSelect: (place: PlaceSelection) => void;
+  onPlaceSelect: (place: PlaceSelection | null) => void;
   disabled?: boolean;
   defaultValue?: string;
 };
 
-type PlacePredictionSelectEvent = Event & {
-  placePrediction?: {
-    toPlace: () => {
-      fetchFields: (opts: { fields: string[] }) => Promise<void>;
-      formattedAddress?: string;
-      displayName?: string;
-      location?: { lat: () => number; lng: () => number };
-    };
-  };
-};
+export async function geocodeAddress(
+  address: string
+): Promise<PlaceSelection | null> {
+  const query = address.trim();
+  if (!query || typeof google === "undefined") {
+    return null;
+  }
 
-const MAPS_DENIED_MESSAGE =
-  "Google denied address search. In Google Cloud enable Maps JavaScript API, Places API, and Places API (New). Add https://peek-eta.vercel.app/* to your API key referrers.";
+  const fromPlaces = await findPlaceByText(query);
+  if (fromPlaces) {
+    return fromPlaces;
+  }
 
-function initLegacyAutocomplete(
-  container: HTMLDivElement,
-  defaultValue: string,
-  onSelect: (place: PlaceSelection) => void
-) {
-  const input = document.createElement("input");
-  input.type = "text";
-  input.name = "location-search";
-  input.placeholder = "Search for an address";
-  input.defaultValue = defaultValue;
-  input.autocomplete = "off";
-  input.className =
-    "w-full border-none bg-transparent px-4 py-3 text-base text-peek-text outline-none placeholder:text-peek-muted";
-  container.appendChild(input);
+  if (!google.maps?.Geocoder) {
+    return null;
+  }
 
-  const autocomplete = new google.maps.places.Autocomplete(input, {
-    fields: ["formatted_address", "geometry", "name"]
-  });
+  const geocoder = new google.maps.Geocoder();
 
-  autocomplete.addListener("place_changed", () => {
-    const place = autocomplete.getPlace();
-    const location =
-      place.formatted_address?.trim() || place.name?.trim() || "";
-    const lat = place.geometry?.location?.lat();
-    const lng = place.geometry?.location?.lng();
+  return new Promise((resolve) => {
+    geocoder.geocode({ address: query }, (results, status) => {
+      if (status !== "OK" || !results?.[0]?.geometry?.location) {
+        resolve(null);
+        return;
+      }
 
-    if (!location || lat === undefined || lng === undefined) return;
-
-    onSelect({ location, latitude: lat, longitude: lng });
+      const result = results[0];
+      resolve({
+        location: formatPlaceLocation(null, result.formatted_address) || query,
+        latitude: result.geometry.location.lat(),
+        longitude: result.geometry.location.lng()
+      });
+    });
   });
 }
 
-async function initNewAutocomplete(
-  container: HTMLDivElement,
-  onSelect: (place: PlaceSelection) => void,
-  onError: (message: string) => void
-) {
-  const placesLib = (await google.maps.importLibrary(
-    "places"
-  )) as google.maps.PlacesLibrary & {
-    PlaceAutocompleteElement?: new (
-      options?: Record<string, unknown>
-    ) => HTMLElement;
-  };
-
-  const PlaceAutocompleteElement = placesLib.PlaceAutocompleteElement;
-
-  if (!PlaceAutocompleteElement) {
-    throw new Error(
-      "Places API (New) is required. Enable it in Google Cloud Console."
-    );
-  }
-
-  const autocomplete = new PlaceAutocompleteElement({});
-  autocomplete.style.width = "100%";
-  autocomplete.style.border = "none";
-  autocomplete.style.background = "transparent";
-  autocomplete.style.colorScheme = "light";
-  container.appendChild(autocomplete);
-
-  autocomplete.addEventListener("gmp-select", async (event: Event) => {
-    try {
-      const selectEvent = event as PlacePredictionSelectEvent;
-      const placePrediction = selectEvent.placePrediction;
-      if (!placePrediction) return;
-
-      const place = placePrediction.toPlace();
-      await place.fetchFields({
-        fields: ["formattedAddress", "displayName", "location"]
-      });
-
-      const location =
-        place.formattedAddress?.trim() || place.displayName?.trim() || "";
-      const lat = place.location?.lat();
-      const lng = place.location?.lng();
-
-      if (!location || lat === undefined || lng === undefined) return;
-
-      onSelect({ location, latitude: lat, longitude: lng });
-    } catch {
-      onError("Could not read the selected address. Try picking again.");
+function findPlaceByText(query: string): Promise<PlaceSelection | null> {
+  return new Promise((resolve) => {
+    if (!google.maps.places?.PlacesService) {
+      resolve(null);
+      return;
     }
-  });
 
-  autocomplete.addEventListener("gmp-error", () => {
-    onError(MAPS_DENIED_MESSAGE);
+    const service = new google.maps.places.PlacesService(
+      document.createElement("div")
+    );
+
+    service.textSearch({ query }, (results, status) => {
+      if (
+        status !== google.maps.places.PlacesServiceStatus.OK ||
+        !results?.[0]?.geometry?.location
+      ) {
+        resolve(null);
+        return;
+      }
+
+      const place = results[0];
+      const lat = place.geometry?.location?.lat();
+      const lng = place.geometry?.location?.lng();
+
+      if (lat === undefined || lng === undefined) {
+        resolve(null);
+        return;
+      }
+
+      resolve({
+        location: formatPlaceLocation(place.name, place.formatted_address) || query,
+        latitude: lat,
+        longitude: lng
+      });
+    });
   });
 }
 
@@ -124,9 +96,9 @@ export function PlacesAutocomplete({
   disabled = false,
   defaultValue = ""
 }: PlacesAutocompleteProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const onPlaceSelectRef = useRef(onPlaceSelect);
-  const [setupError, setSetupError] = useState<string | null>(null);
+  const [mapsHint, setMapsHint] = useState<string | null>(null);
 
   onPlaceSelectRef.current = onPlaceSelect;
 
@@ -140,98 +112,112 @@ export function PlacesAutocomplete({
   });
 
   useEffect(() => {
-    if (!isLoaded || !containerRef.current || disabled) {
+    if (!isLoaded || !inputRef.current || disabled) {
       return;
     }
 
-    let cancelled = false;
-    const container = containerRef.current;
-
-    async function initAutocomplete() {
-      setSetupError(null);
-      container.innerHTML = "";
-
-      const onSelect = (place: PlaceSelection) => {
-        onPlaceSelectRef.current(place);
-      };
-
-      const onError = (message: string) => {
-        if (!cancelled) setSetupError(message);
-      };
-
-      try {
-        // Legacy widget is more stable on iOS Safari and production.
-        if (google.maps.places?.Autocomplete) {
-          initLegacyAutocomplete(container, defaultValue, onSelect);
-          return;
-        }
-
-        if (cancelled) return;
-        await initNewAutocomplete(container, onSelect, onError);
-      } catch (err) {
-        if (cancelled) return;
-
-        // If the new widget fails, try legacy before showing an error.
-        try {
-          container.innerHTML = "";
-          if (google.maps.places?.Autocomplete) {
-            initLegacyAutocomplete(container, defaultValue, onSelect);
-            return;
-          }
-        } catch {
-          // fall through to error message
-        }
-
-        onError(
-          err instanceof Error ? err.message : "Could not start address search."
-        );
-      }
+    if (!google.maps.places?.Autocomplete) {
+      setMapsHint(
+        "Address suggestions are off. Type the full address - we will pin it when you post."
+      );
+      return;
     }
 
-    void initAutocomplete();
+    setMapsHint(null);
+
+    const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
+      fields: ["formatted_address", "geometry", "name"]
+    });
+
+    const listener = autocomplete.addListener("place_changed", () => {
+      const place = autocomplete.getPlace();
+      const location = formatPlaceLocation(
+        place.name,
+        place.formatted_address
+      );
+      const lat = place.geometry?.location?.lat();
+      const lng = place.geometry?.location?.lng();
+
+      if (!location || lat === undefined || lng === undefined) {
+        onPlaceSelectRef.current(null);
+        return;
+      }
+
+      if (inputRef.current) {
+        inputRef.current.value = location;
+      }
+
+      onPlaceSelectRef.current({ location, latitude: lat, longitude: lng });
+    });
 
     return () => {
-      cancelled = true;
-      container.innerHTML = "";
+      google.maps.event.removeListener(listener);
     };
-  }, [isLoaded, disabled, defaultValue]);
+  }, [isLoaded, disabled]);
+
+  function handleInputChange() {
+    onPlaceSelectRef.current(null);
+  }
 
   if (!apiKey) {
     return (
-      <p className="text-sm text-red-600">
-        Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to use address search.
-      </p>
+      <div className="space-y-2">
+        <input
+          ref={inputRef}
+          id="location"
+          name="location"
+          type="text"
+          required
+          disabled={disabled}
+          defaultValue={defaultValue}
+          placeholder="Street, city, or place name"
+          className="input-field"
+          onChange={handleInputChange}
+        />
+        <p className="text-sm text-amber-800">
+          Map search is not set up. Type the address anyway.
+        </p>
+      </div>
     );
-  }
-
-  if (loadError) {
-    return (
-      <p className="text-sm text-red-600">
-        Could not load Google Maps. Check your API key and Google Cloud settings.
-      </p>
-    );
-  }
-
-  if (setupError) {
-    return <p className="text-sm text-red-600">{setupError}</p>;
   }
 
   return (
     <div className="space-y-2">
-      <div
-        className={`input-field p-0 focus-within:border-peek-primary focus-within:ring-2 focus-within:ring-sky-100 ${
-          disabled ? "pointer-events-none opacity-60" : ""
-        } ${!isLoaded ? "bg-peek-card" : ""}`}
-      >
-        <div
-          ref={containerRef}
-          className="places-autocomplete-host w-full"
-          aria-busy={!isLoaded}
-        />
-      </div>
-      {!isLoaded && (
-        <p className="text-sm text-peek-muted">Connecting to Google Maps…</p>
+      <input
+        ref={inputRef}
+        id="location"
+        name="location"
+        type="text"
+        required
+        disabled={disabled}
+        defaultValue={defaultValue}
+        placeholder="Shop, café, or street name…"
+        autoComplete="off"
+        className="input-field"
+        onChange={handleInputChange}
+        aria-describedby={mapsHint ? "location-maps-hint" : undefined}
+      />
+
+      {!isLoaded && !loadError && (
+        <p className="text-sm text-peek-muted">Loading address search…</p>
       )}
+
+      {loadError && (
+        <p className="text-sm text-amber-800">
+          Could not load map search. Type the full address - we will try to pin
+          it when you post.
+        </p>
+      )}
+
+      {mapsHint && (
+        <p id="location-maps-hint" className="text-sm text-peek-muted">
+          {mapsHint}
+        </p>
+      )}
+
+      <p className="text-xs text-peek-muted">
+        Pick a suggestion, or type the full address and post.
+      </p>
     </div>
   );
 }

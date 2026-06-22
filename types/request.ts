@@ -14,6 +14,8 @@ export type MarketplaceRequest = TaskScheduleFields & {
   latitude?: number | null;
   longitude?: number | null;
   created_at?: string;
+  claimed_at?: string | null;
+  peek_check_in_at?: string | null;
 };
 
 export type RequestResponse = {
