@@ -9,6 +9,7 @@ type SendNotificationInput = {
   event: NotificationEvent;
   requestId: string;
   requestTitle: string;
+  scheduleLabel?: string;
   siteUrl?: string;
   /** Set when a DB trigger already inserted the in-app row (e.g. peek_applied). */
   skipInApp?: boolean;
@@ -18,7 +19,8 @@ export async function sendUserNotification(input: SendNotificationInput) {
   const content = buildNotificationContent(
     input.event,
     input.requestTitle,
-    input.requestId
+    input.requestId,
+    { scheduleLabel: input.scheduleLabel }
   );
 
   if (!input.skipInApp) {

@@ -1,10 +1,13 @@
 export type NotificationEvent =
   | "request_live"
   | "peek_applied"
+  | "peek_booked"
   | "peek_approved"
   | "peek_declined"
   | "answer_ready"
-  | "new_request_nearby";
+  | "new_request_nearby"
+  | "claim_reserved"
+  | "claim_window_open";
 
 export type UserNotification = {
   id: string;

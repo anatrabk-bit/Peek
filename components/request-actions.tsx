@@ -7,9 +7,11 @@ import { ClaimTimerPanel } from "@/components/claim-timer-panel";
 import { SubmitResponseForm } from "@/components/submit-response-form";
 import { UserProfilePreview } from "@/components/user-profile-preview";
 import { createClient } from "@/lib/supabase/client";
+import { isClaimWindowOpen } from "@/lib/claim-session";
 import {
   canClaimScheduledTask,
-  claimOpensAtMessage
+  claimOpensAtMessage,
+  formatTaskSchedule
 } from "@/lib/task-schedule";
 import type { PublicPeekDisplay } from "@/lib/supabase/peek-profile";
 import type { MarketplaceRequest, RequestResponse } from "@/types/request";
@@ -71,6 +73,13 @@ export function RequestActions({
   const canClaim =
     isOpen && !request.runner_id && !isOwner && scheduleOpen;
   const canSubmit = request.status === "claimed" && isAssignedRunner;
+  const claimWindowOpen =
+    !!request.claimed_at && isClaimWindowOpen(request, request.claimed_at);
+  const isFutureClaim =
+    request.status === "claimed" &&
+    isAssignedRunner &&
+    !!request.claimed_at &&
+    !claimWindowOpen;
 
   async function handleClaim() {
     setError(null);
@@ -108,19 +117,37 @@ export function RequestActions({
             requestId={request.id}
             claimedAt={request.claimed_at}
             checkInAt={request.peek_check_in_at ?? null}
+            schedule={request}
           />
         )}
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
-          <p className="font-semibold">You&apos;re on it!</p>
+          <p className="font-semibold">
+            {isFutureClaim ? "You're booked!" : "You're on it!"}
+          </p>
           <p className="mt-2 text-sm leading-relaxed">
-            Complete the check while you&apos;re there, then submit your answer
-            below. You&apos;ll earn stars when the client gets their answer.
+            {isFutureClaim ? (
+              <>
+                This starts {formatTaskSchedule(request).toLowerCase()}. We&apos;ll
+                nudge you when it&apos;s time to go.
+              </>
+            ) : (
+              <>
+                Complete the check while you&apos;re there, then submit your answer
+                below. You&apos;ll earn stars when the client gets their answer.
+              </>
+            )}
           </p>
         </div>
-        <SubmitResponseForm
-          requestId={request.id}
-          redirectOnSuccess={`/requests/${request.id}`}
-        />
+        {claimWindowOpen ? (
+          <SubmitResponseForm
+            requestId={request.id}
+            redirectOnSuccess={`/requests/${request.id}`}
+          />
+        ) : (
+          <p className="text-sm text-peek-muted">
+            You can submit your answer once the task starts.
+          </p>
+        )}
         {error && (
           <p className="text-sm text-red-600" role="alert">
             {error}
@@ -145,14 +172,32 @@ export function RequestActions({
     }
 
     if (request.status === "claimed" && assignedPeek) {
+      const bookedForLater =
+        request.task_type === "scheduled" &&
+        request.schedule_mode !== "live" &&
+        !!request.scheduled_at &&
+        new Date(request.scheduled_at).getTime() > Date.now();
+
       return (
         <div className="mt-6 space-y-4">
           <UserProfilePreview display={assignedPeek} showProfileLink={false} />
           <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
-            <p className="font-semibold">A Peek is on it</p>
+            <p className="font-semibold">
+              {bookedForLater ? "A Peek is booked" : "A Peek is on it"}
+            </p>
             <p className="mt-2 text-sm leading-relaxed">
-              They grabbed your task and are checking now. Your answer will
-              appear here when they&apos;re done.
+              {bookedForLater ? (
+                <>
+                  They&apos;re booked for{" "}
+                  {formatTaskSchedule(request).toLowerCase()}. You&apos;ll get
+                  your answer when they check.
+                </>
+              ) : (
+                <>
+                  They grabbed your task and are checking now. Your answer will
+                  appear here when they&apos;re done.
+                </>
+              )}
             </p>
           </div>
         </div>

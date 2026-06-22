@@ -4,9 +4,16 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { notifyRequestWentLive, sendUserNotification } from "@/lib/notifications/send";
 import { canClaimScheduledTask } from "@/lib/task-schedule";
+import { isClaimWindowOpen } from "@/lib/claim-session";
+import {
+  notifyClaimReserved,
+  notifyClaimWindowOpenIfNeeded,
+  notifyRequesterAboutClaim
+} from "@/lib/supabase/claim-notify";
 import { awardPeekStarsForCompletion } from "@/lib/supabase/peek-profile";
 import { createAdminClient, isServiceRoleConfigured } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import type { TaskScheduleFields } from "@/types/task-schedule";
 
 function loginRedirect(requestId: string) {
   redirect(`/login?next=${encodeURIComponent(`/requests/${requestId}`)}`);
@@ -182,21 +189,39 @@ export async function claimRequest(requestId: string) {
 
   const { data: peekRequest } = await supabase
     .from("requests")
-    .select("user_id, title")
+    .select(
+      "user_id, title, task_type, schedule_mode, scheduled_at, claimed_at"
+    )
     .eq("id", requestId)
     .single();
 
-  if (peekRequest?.user_id) {
-    await sendUserNotification({
-      userId: peekRequest.user_id,
-      event: "peek_applied",
+  if (peekRequest?.user_id && peekRequest.claimed_at) {
+    const schedule: TaskScheduleFields = {
+      task_type: (peekRequest.task_type ?? "untimed") as TaskScheduleFields["task_type"],
+      schedule_mode: peekRequest.schedule_mode ?? null,
+      scheduled_at: peekRequest.scheduled_at ?? null
+    };
+
+    await notifyRequesterAboutClaim(
       requestId,
-      requestTitle: peekRequest.title ?? "Your request",
-      skipInApp: true
-    });
+      peekRequest.user_id,
+      peekRequest.title ?? "Your request",
+      schedule
+    );
+
+    if (isClaimWindowOpen(schedule, peekRequest.claimed_at)) {
+      await notifyClaimWindowOpenIfNeeded(requestId);
+    } else {
+      await notifyClaimReserved(requestId, user.id);
+    }
   }
 
   redirect(`/requests/${requestId}`);
+}
+
+export async function triggerClaimWindowNotification(requestId: string) {
+  await notifyClaimWindowOpenIfNeeded(requestId);
+  return { ok: true as const };
 }
 
 export async function checkInOnClaim(requestId: string) {

@@ -3,6 +3,7 @@ import { RequestActions } from "@/components/request-actions";
 import { TaskScheduleBadge } from "@/components/task-schedule-badge";
 import { UserProfilePreview } from "@/components/user-profile-preview";
 import { releaseExpiredClaimIfNeeded } from "@/lib/supabase/claim-lifecycle";
+import { notifyClaimWindowOpenIfNeeded } from "@/lib/supabase/claim-notify";
 import { getPublicPeekDisplay } from "@/lib/supabase/peek-profile";
 import { splitPlaceLocation } from "@/lib/format-place";
 import {
@@ -27,6 +28,7 @@ export default async function RequestDetailsPage({
   } = await supabase.auth.getUser();
 
   await releaseExpiredClaimIfNeeded(params.id);
+  await notifyClaimWindowOpenIfNeeded(params.id);
 
   const [request, existingResponse] = await Promise.all([
     getRequestById(params.id),

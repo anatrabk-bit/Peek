@@ -9,9 +9,11 @@ type NotificationContent = {
 export function buildNotificationContent(
   event: NotificationEvent,
   requestTitle: string,
-  requestId: string
+  requestId: string,
+  extras?: { scheduleLabel?: string }
 ): NotificationContent {
   const safeTitle = requestTitle.trim() || "your request";
+  const when = extras?.scheduleLabel?.trim();
 
   switch (event) {
     case "request_live":
@@ -24,6 +26,14 @@ export function buildNotificationContent(
       return {
         title: "A Peek is on it",
         body: `Someone grabbed "${safeTitle}" and is checking now.`,
+        url: `/requests/${requestId}`
+      };
+    case "peek_booked":
+      return {
+        title: "A Peek is booked",
+        body: when
+          ? `Someone booked "${safeTitle}" for ${when}.`
+          : `Someone booked "${safeTitle}" for later.`,
         url: `/requests/${requestId}`
       };
     case "peek_approved":
@@ -48,6 +58,20 @@ export function buildNotificationContent(
       return {
         title: "New job nearby",
         body: `"${safeTitle}" is open. Tap I'm on it if you're nearby.`,
+        url: `/requests/${requestId}`
+      };
+    case "claim_reserved":
+      return {
+        title: "You're booked",
+        body: when
+          ? `"${safeTitle}" is yours. We'll remind you when it's time to go (${when}).`
+          : `"${safeTitle}" is yours. We'll remind you when it's time to go.`,
+        url: `/requests/${requestId}`
+      };
+    case "claim_window_open":
+      return {
+        title: "Time to go",
+        body: `"${safeTitle}" is ready. Head there when you can and submit your answer.`,
         url: `/requests/${requestId}`
       };
   }
