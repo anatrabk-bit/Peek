@@ -16,3 +16,10 @@ pnpm-debug.log*
 
 # typescript
 *.tsbuildinfo
+
+# capacitor native build outputs
+android/app/build/
+android/.gradle/
+android/.idea/
+ios/App/Pods/
+ios/DerivedData/

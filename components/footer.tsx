@@ -52,6 +52,11 @@ export function Footer({ className }: FooterProps) {
                   Profile &amp; stars
                 </Link>
               </li>
+              <li>
+                <Link href="/privacy" className="hover:text-peek-primary">
+                  Privacy
+                </Link>
+              </li>
               {supportUrl && (
                 <li>
                   <a

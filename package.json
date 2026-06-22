@@ -10,9 +10,19 @@
     "lint": "next lint",
     "db:migrate": "node scripts/apply-migrations.mjs",
     "db:migrate:baseline": "node scripts/apply-migrations.mjs -- --baseline",
-    "db:migrate:status": "node scripts/apply-migrations.mjs -- --status"
+    "db:migrate:status": "node scripts/apply-migrations.mjs -- --status",
+    "cap:sync": "npx cap sync",
+    "cap:android": "npx cap open android",
+    "cap:ios": "npx cap open ios"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1",
+    "@capacitor/ios": "^8.4.1",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
     "@react-google-maps/api": "^2.20.8",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.49.4",
